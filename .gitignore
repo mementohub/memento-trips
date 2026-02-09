@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────
+# Memento Trips — .gitignore
+# ─────────────────────────────────────────────
+
+# ── Laravel core ────────────────────────────
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+.env
+.env.backup
+.env.production
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# ── Compiled / built assets ─────────────────
+/public/build/
+
+# ── IDE & OS ────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Logs ────────────────────────────────────
+storage/logs/*.log
+error_log
+
+# ── Cache ───────────────────────────────────
+bootstrap/cache/*.php
+!bootstrap/cache/.gitkeep
+
+# ── Testing ─────────────────────────────────
+.phpunit.result.cache
+
+# ── Debug ───────────────────────────────────
+storage/debugbar/
+
+# ── Temporary / script files ────────────────
+*.tmp
+blade_*.php
+cms_*.php
+views_*.php
+fix_*.php
+css_*.php
+
+# ── Backups & archives (DO NOT COMMIT) ──────
+/###prev/
+/###prev.zip
+/_original_backup/
+/Models.zip
+
+# ── Database dumps ──────────────────────────
+*.sql
+
+# ── Debug / analysis reports ────────────────
+_comparison_report.txt
+public_html_tree.txt
+
+# ── Uploaded user content (174 MB+) ─────────
+/public/uploads/
+
+# ── Empty / unused directories ──────────────
+/updated/
+
+# ── Cursor / AI config ─────────────────────
+remix.mdc
+
+# ── Suspicious / empty PHP in public ────────
+/public/ace_.php
+/public/bab_.php
+/public/black.php
