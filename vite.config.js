@@ -25,4 +25,11 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                silenceDeprecations: ['color-functions', 'global-builtin', 'import', 'if-function', 'legacy-js-api'],
+            },
+        },
+    },
 });
