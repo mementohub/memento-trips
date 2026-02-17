@@ -4,7 +4,7 @@ set -e
 echo "🚀 Starting deployment..."
 
 # Install PHP dependencies
-composer install --no-dev --optimize-autoloader
+composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Install and build frontend assets
 npm ci
@@ -19,10 +19,15 @@ fi
 # Storage link (ignore if already exists)
 php artisan storage:link 2>/dev/null || true
 
-# Fix permissions
+# Fix permissions BEFORE caching
 chmod -R 775 storage bootstrap/cache
 
-# Cache config, routes, views
+# Clear old caches first
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Re-cache
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
