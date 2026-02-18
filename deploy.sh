@@ -27,10 +27,10 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
-# Re-cache
+# Re-cache (view:cache MUST come before route:cache to avoid routes-v7.php conflict)
 php artisan config:cache
-php artisan route:cache
 php artisan view:cache
+php artisan route:cache
 
 # Run migrations
 php artisan migrate --force
