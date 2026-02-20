@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,10 +21,10 @@ return new class extends Migration
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
             $table->foreignId('service_type_id')->constrained('service_types')->onDelete('cascade');
-            
+
             // Add age_categories JSON field for flexible age-based pricing
             $table->json('age_categories')->nullable();
-            
+
             $table->decimal('price_per_person', 10, 2)->nullable();
             $table->decimal('full_price', 10, 2)->nullable();
             $table->decimal('discount_price', 10, 2)->nullable();
@@ -60,12 +59,11 @@ return new class extends Migration
             $table->string('website')->nullable();
             $table->json('social_links')->nullable();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('destination_id')->nullable()->constrained('destinations')->onDelete('set null');
-            
+
             // Date range fields for listings
             $table->date('check_in_date')->nullable();
             $table->date('check_out_date')->nullable();
-            
+
             // UI fields
             $table->string('tour_plan_sub_title')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
             $table->string('google_map_sub_title')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
@@ -73,10 +71,10 @@ return new class extends Migration
             $table->integer('room_count')->default(1);
             $table->integer('adult_count')->default(1);
             $table->integer('children_count')->default(0);
-            
+
             $table->timestamps();
         });
-        
+
         // Ensure the table uses utf8mb4 charset
         DB::statement('ALTER TABLE services CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
     }
