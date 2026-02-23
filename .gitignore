@@ -73,3 +73,4 @@ remix.mdc
 # ── Junk files (buggy script artifacts) ─────
 *.PHP_EOL
 id.\ |\ .*
+memento-trips-fresh
