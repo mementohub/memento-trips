@@ -1769,7 +1769,7 @@
                 }
 
                 if (info.notes) {
-                    html += `< p class="mb-0" > <strong>Notes:</strong> ${info.notes}</p >`;
+                    html += `<p class="mb-0"><strong>Notes:</strong> ${info.notes}</p>`;
                 }
 
                 html += '</div>';
@@ -2300,11 +2300,11 @@ return [
             const icon = L.divIcon({
                 className: 'custom-pickup-marker-modal',
                 html: `
-        < div class="marker-wrapper" >
+        <div class="marker-wrapper">
             <i class="fa fa-map-marker" style="color: ${color}; font-size: 32px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"></i>
                             ${isSelected ? '<div class="selected-pulse"></div>' : ''}
                             ${isDefault ? '<div class="default-badge">★</div>' : ''}
-                        </div >
+        </div>
         `,
                 iconSize: [40, 40],
                 iconAnchor: [20, 35]
@@ -2315,12 +2315,12 @@ return [
                     .addTo(this.pickupModalMap);
 
                 const distanceText = pickup.distance
-                    ? `< p class="mb-1" ><i class="fa fa-road"></i> <strong>${pickup.distance} km away</strong></p > `
+                    ? `<p class="mb-1"><i class="fa fa-road"></i> <strong>${pickup.distance} km away</strong></p>`
                     : '';
                 const defaultText = pickup.is_default ? '<span class="badge badge-warning">Default</span>' : '';
 
                 const popupContent = `
-        < div class="pickup-popup-enhanced" >
+        <div class="pickup-popup-enhanced">
                             <h6 class="mb-2" style="color: ${color};">
                                 <i class="fa fa-map-marker"></i> ${pickup.name || 'Unknown'} ${defaultText}
                             </h6>
@@ -2337,7 +2337,7 @@ return [
             ${isSelected ? '✓ Selected' : 'Select Point'}
         </button>
     </div>
-                        </div >
+        </div>
         `;
 
                 marker.bindPopup(popupContent, {
@@ -2362,10 +2362,10 @@ return [
                 const userIcon = L.divIcon({
                     className: 'user-location-marker-modal',
                     html: `
-        < div class="user-marker" >
+        <div class="user-marker">
                                 <i class="fa fa-location-arrow" style="color: #007bff; font-size: 26px;"></i>
                                 <div class="user-pulse"></div>
-                            </div >
+        </div>
         `,
                     iconSize: [30, 30],
                     iconAnchor: [15, 15]
