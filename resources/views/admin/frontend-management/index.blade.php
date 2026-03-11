@@ -50,13 +50,15 @@
                                                     <div class="row mt-4">
                                                         @foreach($pageSections as $key => $section)
                                                             <div class="col-md-4 mb-4">
-                                                                <div class="card h-100 section-card {{ isset($section['theme']) ? 'border-primary' : 'border-primary' }}">
-                                                                    <div class="card-header bg-{{ isset($section['theme']) ? 'primary' : 'primary' }} text-white d-flex justify-content-between align-items-center">
+                                                                <div class="card h-100 section-card border-primary">
+                                                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                                                                         <h5 class="card-title mb-0">{{ $section['name'] }}</h5>
                                                                         @if(isset($section['order']))
-                                                                            <span class="badge bg-light text-dark">
-                                                                                {{ __('translate.Order') }}: {{ $section['order'] }}
-                                                                            </span>
+                                                                            <input type="number" class="section-order-input"
+                                                                                   value="{{ $section['order'] }}"
+                                                                                   data-key="{{ $key }}"
+                                                                                   min="0" max="99"
+                                                                                   title="Section display order">
                                                                         @endif
                                                                     </div>
                                                                     <div class="card-body">
@@ -137,10 +139,57 @@
         max-width: 200px;
     }
 
+    .section-order-input {
+        width: 52px;
+        height: 28px;
+        text-align: center;
+        border: none;
+        border-radius: 6px;
+        background: rgba(255,255,255,.9);
+        color: #333;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 0 4px;
+    }
+    .section-order-input:focus {
+        outline: 2px solid #fff;
+    }
+
     @media (max-width: 768px) {
         .card-header h5 {
             max-width: 150px;
         }
     }
 </style>
+@endpush
+
+@push('js_section')
+<script>
+document.querySelectorAll('.section-order-input').forEach(input => {
+    input.addEventListener('change', function() {
+        const key = this.dataset.key;
+        const ordering = parseInt(this.value) || 0;
+        const el = this;
+
+        fetch("{{ route('admin.front-end.section-ordering') }}", {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ data_keys: key, ordering: ordering })
+        })
+        .then(r => r.json())
+        .then(data => {
+            el.style.background = '#d4edda';
+            setTimeout(() => el.style.background = 'rgba(255,255,255,.9)', 1000);
+        })
+        .catch(err => {
+            el.style.background = '#f8d7da';
+            setTimeout(() => el.style.background = 'rgba(255,255,255,.9)', 1000);
+        });
+    });
+});
+</script>
 @endpush

@@ -211,6 +211,7 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin', 'middleware' => ['DesktopOn
                     Route::put('store/{key}/{id?}', 'store')->name('store');
                     Route::get('/frontend-field-template', 'getFieldTemplate')->name('field-template');
                     Route::post('/upload-image', [App\Http\Controllers\Admin\UploadController::class , 'editorImage'])->name('upload-image');
+                    Route::put('/section-ordering', 'updateSectionOrdering')->name('section-ordering');
                 }
                 );
             }

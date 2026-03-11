@@ -495,4 +495,30 @@ class FrontEndManagementController extends Controller
 
         return $sectionsByPage;
     }
+
+    /**
+     * Update the ordering of a single frontend section via AJAX.
+     */
+    public function updateSectionOrdering(Request $request)
+    {
+        $request->validate([
+            'data_keys' => 'required|string',
+            'ordering' => 'required|integer|min:0',
+        ]);
+
+        $frontend = Frontend::where('data_keys', 'like', $request->data_keys . '.%')->first();
+
+        if ($frontend) {
+            $frontend->update(['ordering' => (int) $request->ordering]);
+        } else {
+            // Create a placeholder record if it doesn't exist yet
+            Frontend::create([
+                'data_keys' => $request->data_keys . '.content',
+                'data_values' => json_encode([]),
+                'ordering' => (int) $request->ordering,
+            ]);
+        }
+
+        return response()->json(['message' => 'Order updated', 'alert-type' => 'success']);
+    }
 }
