@@ -275,7 +275,7 @@
     <!-- footer-area-start -->
     <footer>
         <div class="tg-footer-area pt-130 include-bg {{ request()->routeIs('faq') || request()->routeIs('pricing') ? 'tg-footer-space' : '' }} "
-            data-background="{{ asset('frontend/assets/img/others/footer/footer.jpg') }}">
+            data-background="{{ asset('frontend/assets/img/shape/home-1-footer-bg.jpeg') }}">
             <div class="container">
                 <div class="tg-footer-top pb-40">
                     <div class="row">
