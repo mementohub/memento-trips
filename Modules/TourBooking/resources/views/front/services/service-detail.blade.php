@@ -3558,13 +3558,14 @@ return [
             display: flex;
             flex-direction: column;
             position: fixed;
-            left: 0; right: 0; bottom: 0;
-            max-height: 85vh;
+            left: 0; right: 0;
+            bottom: calc(var(--app-bar-h, 68px) + env(safe-area-inset-bottom, 0px));
+            max-height: 75vh;
             background: #fff;
             border-radius: 20px 20px 0 0;
             box-shadow: 0 -8px 40px rgba(0,0,0,.15);
             z-index: 9992;
-            transform: translateY(100%);
+            transform: translateY(110%);
             transition: transform .3s cubic-bezier(.32,.72,0,1);
         }
         .mob-book-sheet.is-open {
@@ -3598,7 +3599,7 @@ return [
             color: #333;
         }
         .mob-book-sheet-body {
-            padding: 16px 20px 24px;
+            padding: 16px 20px 30px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             flex: 1;
