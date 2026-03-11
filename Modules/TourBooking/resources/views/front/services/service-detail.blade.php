@@ -1553,6 +1553,30 @@
 
 </main>
 <!-- main-area-end -->
+
+{{-- Mobile Sticky Book Now Button --}}
+<div class="mob-book-sticky" id="mobBookSticky">
+    <button type="button" class="mob-book-sticky-btn" id="mobBookBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        BOOK NOW
+    </button>
+</div>
+
+{{-- Mobile Booking Modal Backdrop --}}
+<div class="mob-book-backdrop" id="mobBookBackdrop"></div>
+
+{{-- Mobile Booking Modal Sheet --}}
+<div class="mob-book-sheet" id="mobBookSheet">
+    <div class="mob-book-sheet-header">
+        <h5>Book Now</h5>
+        <button type="button" class="mob-book-sheet-close" id="mobBookClose">&times;</button>
+    </div>
+    <div class="mob-book-sheet-body" id="mobBookSheetBody">
+        {{-- Booking form will be moved here on mobile via JS --}}
+    </div>
+</div>
 @endsection
 
 
@@ -2809,6 +2833,40 @@ return [
     };
 }
 </script>
+
+<script>
+// Mobile Book Now modal logic
+(function(){
+    if (window.innerWidth > 991) return;
+
+    const btn       = document.getElementById('mobBookBtn');
+    const backdrop  = document.getElementById('mobBookBackdrop');
+    const sheet     = document.getElementById('mobBookSheet');
+    const closeBtn  = document.getElementById('mobBookClose');
+    const sheetBody = document.getElementById('mobBookSheetBody');
+    const sidebar   = document.querySelector('.tg-tour-about-sidebar');
+
+    if (!btn || !sidebar) return;
+
+    // Move sidebar content into sheet body
+    sheetBody.appendChild(sidebar);
+
+    function openSheet() {
+        backdrop.classList.add('is-open');
+        sheet.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSheet() {
+        backdrop.classList.remove('is-open');
+        sheet.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    btn.addEventListener('click', openSheet);
+    closeBtn.addEventListener('click', closeSheet);
+    backdrop.addEventListener('click', closeSheet);
+})();
+</script>
 @endpush
 
 @push('style_section')
@@ -3440,6 +3498,121 @@ return [
         font-size: 14px;
         font-weight: 500;
         color: #111827;
+    }
+
+    /* ===== Mobile Sticky Book Now ===== */
+    .mob-book-sticky,
+    .mob-book-backdrop,
+    .mob-book-sheet { display: none; }
+
+    @media (max-width: 991px) {
+        .tg-tour-about-sidebar { display: none !important; }
+
+        .mob-book-sticky {
+            display: block;
+            position: fixed;
+            left: 0; right: 0;
+            bottom: calc(var(--app-bar-h, 68px) + env(safe-area-inset-bottom, 0px));
+            z-index: 9990;
+            padding: 0 12px 8px;
+        }
+        .mob-book-sticky-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 20px;
+            background: #ff4200;
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255,66,0,.35);
+            transition: all .2s;
+        }
+        .mob-book-sticky-btn:active {
+            transform: scale(.97);
+            box-shadow: 0 2px 10px rgba(255,66,0,.25);
+        }
+
+        .mob-book-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.4);
+            z-index: 9991;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease;
+        }
+        .mob-book-backdrop.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mob-book-sheet {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            max-height: 85vh;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -8px 40px rgba(0,0,0,.15);
+            z-index: 9992;
+            transform: translateY(100%);
+            transition: transform .3s cubic-bezier(.32,.72,0,1);
+        }
+        .mob-book-sheet.is-open {
+            transform: translateY(0);
+        }
+        .mob-book-sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .mob-book-sheet-header h5 {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+            color: #1a1a2e;
+        }
+        .mob-book-sheet-close {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            background: #fff;
+            font-size: 22px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #333;
+        }
+        .mob-book-sheet-body {
+            padding: 16px 20px 24px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+        }
+        .mob-book-sheet-body .tg-tour-about-sidebar {
+            display: block !important;
+            position: static !important;
+            top: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        .mob-book-sheet-body .tg-tour-about-title.title-2 { display: none; }
     }
 </style>
 @endpush
