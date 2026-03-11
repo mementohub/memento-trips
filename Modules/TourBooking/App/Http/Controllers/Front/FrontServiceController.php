@@ -429,6 +429,22 @@ final class FrontServiceController extends Controller
             ->when($request->filled('ratting') && $request->ratting != 'default', function ($query) use ($request) {
                 $query->having('active_reviews_avg_rating', '>=', $request->ratting);
             })
+            ->when($request->filled('checkIn'), function ($query) use ($request) {
+                // Parse the date from MM/DD/YYYY to Y-m-d
+                try {
+                    $date = \Carbon\Carbon::createFromFormat('m/d/Y', $request->checkIn)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    return;
+                }
+                // Primary sort: services with active availability for this date come first
+                $query->orderByRaw('
+                    (SELECT COUNT(*) FROM availabilities a
+                     WHERE a.service_id = services.id
+                     AND a.date = ?
+                     AND a.is_available = 1
+                     AND a.available_spots > 0) DESC
+                ', [$date]);
+            })
             ->when($request->filled('sort_by'), function ($query) use ($request) {
                 switch ($request->sort_by) {
                     case 'price_low':  $query->orderByRaw('COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(age_categories, \'$.adult.price\')) AS DECIMAL(10,2)), price_per_person, 0) ASC'); break;
