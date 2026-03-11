@@ -198,7 +198,7 @@ $enum_languages = App\Enums\Language::cases();
   <div class="tg-listing-grid-area mb-85">
     <div class="container">
       <div class="row">
-        <div class="col-xl-3 col-lg-4 order-last order-lg-first">
+        <div class="col-xl-3 col-lg-4 order-last order-lg-first d-none d-lg-block" id="filterSidebarDesktop">
           <div class="tg-filter-sidebar mb-40 top-sticky">
             <div class="tg-filter-item">
 
@@ -350,6 +350,145 @@ $enum_languages = App\Enums\Language::cases();
             </div>
           </div>
         </div>
+
+        {{-- Mobile filter offcanvas --}}
+        <div class="filter-offcanvas-backdrop" id="filterBackdrop" onclick="toggleMobileFilters()"></div>
+        <div class="filter-offcanvas d-lg-none" id="filterOffcanvas">
+          <div class="filter-offcanvas-header">
+            <h4 class="mb-0" style="font-weight:700;">Filters</h4>
+            <button onclick="toggleMobileFilters()" class="filter-offcanvas-close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="filter-offcanvas-body">
+            <div class="tg-filter-item">
+
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-10">
+                  <h4 class="tg-filter-title mb-0">Search</h4>
+                  <a class="tg-filter-reset" x-show="isFilterChanged || isBookingFilterChanged" @click="resetFilters()"
+                    href="javascript:void(0);">Reset All</a>
+                </div>
+                <div class="tg-filter-search-form">
+                  <div class="p-relative">
+                    <input class="input" x-model.debounce="filters.search" type="text" placeholder="Search here...">
+                    <button class="buttons" type="submit">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_mob)"><path d="M13.2218 13.2222L10.5188 10.5192M12.1959 6.48705C12.1959 9.6402 9.63977 12.1963 6.48662 12.1963C3.33348 12.1963 0.777344 9.6402 0.777344 6.48705C0.777344 3.3339 3.33348 0.777771 6.48662 0.777771C9.63977 0.777771 12.1959 3.3339 12.1959 6.48705Z" stroke="#353844" stroke-width="1.575" stroke-linecap="round" stroke-linejoin="round" /></g>
+                        <defs><clipPath id="clip0_mob"><rect width="14" height="14" fill="white" /></clipPath></defs>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <span class="tg-filter-border mt-30 mb-25"></span>
+              </div>
+
+              <div x-data="{ showPropertyType: false }">
+                <h4 class="tg-filter-title mb-15">Trip Type</h4>
+                <div class="tg-filter-list">
+                  <ul>
+                    @foreach ($serviceTypes as $key => $serviceType)
+                    <li x-show="showPropertyType || {{ $key }} < 4" x-transition>
+                      <div class="checkbox d-flex">
+                        <input value="{{ $serviceType?->id }}" x-model="filters.service_type_ids" class="tg-checkbox"
+                          type="checkbox" id="mob_type_{{ $key }}">
+                        <label for="mob_type_{{ $key }}" class="tg-label">{{ $serviceType?->name }}</label>
+                      </div>
+                    </li>
+                    @endforeach
+                  </ul>
+                </div>
+                @if (count($serviceTypes) > 4)
+                <div class="tg-filter-seemore mt-2 cp select-none" @click="showPropertyType = !showPropertyType">
+                  <span class="plus"><i :class="showPropertyType ? 'fa-solid fa-minus' : 'fa-sharp fa-solid fa-plus'"></i></span>
+                  <span class="more" x-text="showPropertyType ? 'See Less' : 'See More'"></span>
+                </div>
+                @endif
+                <span class="tg-filter-border mt-25 mb-25"></span>
+              </div>
+
+              <div class="tg-filter-price-input">
+                <h4 class="tg-filter-title mb-20">Price Range</h4>
+                <div class="d-flex align-items-center">
+                  <input class="input no-arrow" x-model="filters.min_price" type="number" placeholder="Min Price">
+                  <span class="dvdr"><svg width="14" height="4" viewBox="0 0 14 4" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2H12" stroke="#353844" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <input class="input no-arrow" x-model="filters.max_price" type="number" placeholder="Max Price">
+                </div>
+              </div>
+              <span class="tg-filter-border mt-25 mb-25"></span>
+
+              <div x-data="{ showAmenity: false }">
+                <h4 class="tg-filter-title mb-15">Included</h4>
+                <div class="tg-filter-list">
+                  <ul>
+                    @foreach ($amenities as $key => $amenity)
+                    <li x-show="showAmenity || {{ $key }} < 4" x-transition>
+                      <div class="checkbox d-flex">
+                        <input value="{{ $amenity->id }}" x-model="filters.amenity_ids"
+                          class="tg-checkbox" type="checkbox" id="mob_amenity_{{ $key }}">
+                        <label for="mob_amenity_{{ $key }}" class="tg-label">{{ $amenity?->translation?->name }}</label>
+                      </div>
+                    </li>
+                    @endforeach
+                  </ul>
+                </div>
+                @if (count($amenities) > 4)
+                <div class="tg-filter-seemore mt-2 cp select-none" @click="showAmenity = !showAmenity">
+                  <span class="plus"><i :class="showAmenity ? 'fa-solid fa-minus' : 'fa-sharp fa-solid fa-plus'"></i></span>
+                  <span class="more" x-text="showAmenity ? 'See Less' : 'See More'"></span>
+                </div>
+                @endif
+                <span class="tg-filter-border mt-25 mb-25"></span>
+              </div>
+
+              <h4 class="tg-filter-title mb-15">Rating</h4>
+              <div class="tg-filter-list">
+                <ul>
+                  @for ($i = 5; $i >= 1; $i--)
+                  <li>
+                    <div class="checkbox d-flex">
+                      <input id="mob_rating_{{ $i }}" x-model="filters.ratings" class="tg-checkbox" type="checkbox"
+                        value="{{ $i }}" name="mob_filter_ratings[]">
+                      <div class="tg-filter-review">
+                        <label for="mob_rating_{{ $i }}">
+                          @for ($j = 1; $j <= 5; $j++) @if ($j <=$i) <span><i class="fa-solid fa-star-sharp"></i></span>
+                            @else
+                            <span class="bad-review"><i class="fa-light fa-star-sharp"></i></span>
+                            @endif
+                            @endfor
+                        </label>
+                      </div>
+                    </div>
+                  </li>
+                  @endfor
+                </ul>
+              </div>
+              <span class="tg-filter-border mt-25 mb-25"></span>
+
+              <div x-data="{ showMoreLanguages: false }">
+                <h4 class="tg-filter-title mb-15">Guide Language</h4>
+                <div class="tg-filter-list">
+                  <ul>
+                    @foreach ($languages as $key => $language)
+                    <li x-show="showMoreLanguages || {{ $key }} < 4" x-transition>
+                      <div class="checkbox d-flex">
+                        <input value="{{ $language?->name }}" x-model="filters.languages" class="tg-checkbox"
+                          type="checkbox" id="mob_language_{{ $key }}">
+                        <label for="mob_language_{{ $key }}" class="tg-label">{{ $language?->value }}</label>
+                      </div>
+                    </li>
+                    @endforeach
+                  </ul>
+                </div>
+                @if (count($languages) > 4)
+                <div class="tg-filter-seemore mt-2 cp select-none" @click="showMoreLanguages = !showMoreLanguages">
+                  <span class="plus"><i :class="showMoreLanguages ? 'fa-solid fa-minus' : 'fa-sharp fa-solid fa-plus'"></i></span>
+                  <span class="more" x-text="showMoreLanguages ? 'See Less' : 'See More'"></span>
+                </div>
+                @endif
+              </div>
+
+            </div>
+          </div>
+        </div>
         <div class="col-xl-9 col-lg-8">
           <div class="tg-listing-item-box-wrap ml-10">
             <div class="tg-listing-box-filter mb-15">
@@ -361,6 +500,9 @@ $enum_languages = App\Enums\Language::cases();
                 </div>
                 <div class="col-lg-7 col-md-7 mb-15">
                   <div class="tg-listing-box-view-type d-flex justify-content-end align-items-center">
+                    <button class="btn-mobile-filter d-lg-none" onclick="toggleMobileFilters()">
+                      <i class="fa-solid fa-sliders"></i> Filters
+                    </button>
                     <div class="tg-listing-sort">
                       <span>Sort by:</span>
                       <a href="#">
@@ -773,6 +915,16 @@ $enum_languages = App\Enums\Language::cases();
     scheduleUpdate();
   }
 
+  // Mobile filter offcanvas toggle
+  function toggleMobileFilters() {
+    const oc = document.getElementById('filterOffcanvas');
+    const bd = document.getElementById('filterBackdrop');
+    if (!oc) return;
+    const isOpen = oc.classList.contains('open');
+    oc.classList.toggle('open', !isOpen);
+    bd.classList.toggle('open', !isOpen);
+    document.body.style.overflow = isOpen ? '' : 'hidden';
+  }
 
 </script>
 @endpush
@@ -783,6 +935,83 @@ $enum_languages = App\Enums\Language::cases();
 <style>
   .tg-booking-add-input-field {
     width: 100%;
+  }
+
+  /* ===== MOBILE FILTER OFFCANVAS ===== */
+  .btn-mobile-filter {
+    background: #ff4200;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  .btn-mobile-filter:hover { filter: brightness(.92); }
+
+  .filter-offcanvas-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1040;
+  }
+  .filter-offcanvas-backdrop.open { display: block; }
+
+  .filter-offcanvas {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 85vw;
+    height: 100vh;
+    background: #fff;
+    z-index: 1050;
+    transition: right .3s ease;
+    box-shadow: -4px 0 24px rgba(0,0,0,.12);
+    display: flex;
+    flex-direction: column;
+  }
+  .filter-offcanvas.open { right: 0; }
+
+  .filter-offcanvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid #eee;
+  }
+  .filter-offcanvas-close {
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .filter-offcanvas-close:hover { background: #f5f5f5; }
+
+  .filter-offcanvas-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  @media (min-width: 992px) {
+    .filter-offcanvas,
+    .filter-offcanvas-backdrop,
+    .btn-mobile-filter { display: none !important; }
   }
 
   .trip-type-item {
