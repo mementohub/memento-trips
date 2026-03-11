@@ -320,6 +320,20 @@ return $v === $key ? $fallback : $v;
 
     <div class="pt-section">{{ pt_t('translate.Team & Users','Team & Users') }}</div>
     <ul class="pt-nav">
+        <li class="pt-item {{ Route::is('admin.admins.*') ? 'is-active' : '' }}">
+            <a class="pt-link" href="{{ route('admin.admins.index') }}">
+                <span class="pt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.7">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg></span>
+                <span class="pt-text">Manage Admins</span>
+                @php $__pendingDeletes = \App\Models\AdminDeleteRequest::where('status','pending')->count(); @endphp
+                @if($__pendingDeletes > 0)
+                    <span style="margin-left:auto;background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;">{{ $__pendingDeletes }}</span>
+                @endif
+            </a>
+        </li>
+
         <li class="pt-item {{ Route::is('admin.team.*') ? 'is-active' : '' }}">
             <a class="pt-link" href="{{ route('admin.team.index') }}">
                 <span class="pt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"

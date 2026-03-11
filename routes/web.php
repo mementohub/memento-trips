@@ -204,6 +204,18 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin', 'middleware' => ['DesktopOn
                 }
                 );
 
+                // Admin Account Management
+                Route::controller(App\Http\Controllers\Admin\AdminManagementController::class)->name('admins.')->prefix('admins')->group(function () {
+                    Route::get('/', 'index')->name('index');
+                    Route::get('/create', 'create')->name('create');
+                    Route::post('/', 'store')->name('store');
+                    Route::get('/{id}/edit', 'edit')->name('edit');
+                    Route::put('/{id}', 'update')->name('update');
+                    Route::post('/{id}/request-delete', 'requestDelete')->name('request-delete');
+                    Route::put('/delete-request/{id}/approve', 'approveDelete')->name('approve-delete');
+                    Route::put('/delete-request/{id}/reject', 'rejectDelete')->name('reject-delete');
+                });
+
                 // Frontend Management
                 Route::controller(FrontEndManagementController::class)->name('front-end.')->group(function () {
                     Route::get('/frontend-section', 'index')->name('frontend-section');
