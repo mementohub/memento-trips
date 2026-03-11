@@ -1951,11 +1951,11 @@ return [
     function reviewForm() {
         return {
             categories: [
-                { name: 'Location', rating: 0 },
-                { name: 'Price', rating: 0 },
-                { name: 'Amenities', rating: 0 },
-                { name: 'Rooms', rating: 0 },
-                { name: 'Services', rating: 0 }
+                { name: 'Overall', rating: 0 },
+                { name: 'Guide', rating: 0 },
+                { name: 'Organization', rating: 0 },
+                { name: 'Transportation', rating: 0 },
+                { name: 'Value for money', rating: 0 }
             ],
             hoverRating: 0,
             hoverIndex: null,
