@@ -25,26 +25,29 @@
         $homeSections = \App\Models\Frontend::where('data_keys', 'like', 'theme1_%')
             ->pluck('ordering', 'data_keys')
             ->mapWithKeys(function ($ordering, $key) {
-                // Strip .content or .element suffix to get the section key
                 $sectionKey = preg_replace('/\.(content|element)$/', '', $key);
                 return [$sectionKey => $ordering ?: 0];
             })
             ->toArray();
 
-        // Build ordered list: sections with DB ordering first, then defaults
+        // Build ordered list (exclude slider — it's always first)
         $orderedSections = [];
         foreach ($sectionMap as $key => $view) {
+            if ($key === 'theme1_slider') continue;
             $order = $homeSections[$key] ?? 999;
             $orderedSections[] = ['key' => $key, 'view' => $view, 'order' => $order];
         }
 
-        // Sort by order, preserving original order for ties
         usort($orderedSections, fn($a, $b) => $a['order'] <=> $b['order']);
     @endphp
 
-    {{-- Always render booking form first (not a managed section) --}}
+    {{-- 1. Hero slider — always first --}}
+    @include('theme::components.slider')
+
+    {{-- 2. Booking/search form — always after slider --}}
     @include('theme::components.booking-form')
 
+    {{-- 3. Remaining sections in admin-defined order --}}
     @foreach ($orderedSections as $section)
         @includeIf($section['view'])
     @endforeach

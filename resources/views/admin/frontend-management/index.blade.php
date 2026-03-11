@@ -54,11 +54,14 @@
                                                                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                                                                         <h5 class="card-title mb-0">{{ $section['name'] }}</h5>
                                                                         @if(isset($section['order']))
-                                                                            <input type="number" class="section-order-input"
-                                                                                   value="{{ $section['order'] }}"
-                                                                                   data-key="{{ $key }}"
-                                                                                   min="0" max="99"
-                                                                                   title="Section display order">
+                                                                            <span class="order-badge">
+                                                                                <span class="order-badge-label">Order:</span>
+                                                                                <input type="number" class="section-order-input"
+                                                                                       value="{{ $section['order'] }}"
+                                                                                       data-key="{{ $key }}"
+                                                                                       min="0" max="99"
+                                                                                       title="Section display order">
+                                                                            </span>
                                                                         @endif
                                                                     </div>
                                                                     <div class="card-body">
@@ -132,27 +135,50 @@
     }
 
     .card-header h5 {
-        font-size: 1.1rem;
+        font-size: 1rem;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
-        max-width: 200px;
+        flex: 1;
+        min-width: 0;
     }
 
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255,255,255,.2);
+        border-radius: 10px;
+        padding: 2px 6px 2px 8px;
+        margin-left: 8px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    .order-badge-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255,255,255,.85);
+        margin-right: 3px;
+    }
     .section-order-input {
-        width: 52px;
-        height: 28px;
+        width: 32px;
+        height: 22px;
         text-align: center;
         border: none;
-        border-radius: 6px;
+        border-radius: 5px;
         background: rgba(255,255,255,.9);
         color: #333;
         font-weight: 700;
-        font-size: 13px;
-        padding: 0 4px;
+        font-size: 12px;
+        padding: 0 2px;
+        -moz-appearance: textfield;
+    }
+    .section-order-input::-webkit-inner-spin-button,
+    .section-order-input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
     .section-order-input:focus {
-        outline: 2px solid #fff;
+        outline: 2px solid rgba(255,255,255,.6);
     }
 
     @media (max-width: 768px) {
