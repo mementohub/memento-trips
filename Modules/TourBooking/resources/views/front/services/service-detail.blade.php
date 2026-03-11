@@ -1981,7 +1981,7 @@ return [
                     return;
                 }
 
-                fetch(`{ { route('front.tourbooking.reviews.store') } } `, {
+                fetch(`{{ route('front.tourbooking.reviews.store') }}`, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
