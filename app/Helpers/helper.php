@@ -379,8 +379,10 @@ function serviceTypeTab()
 
 function destinations()
 {
-    return Destination::select('id', 'name')
+    return Destination::select('id', 'name', 'ordering')
         ->where('status', true)
+        ->withCount('services')
+        ->orderBy('ordering', 'asc')
         ->get();
 }
 
