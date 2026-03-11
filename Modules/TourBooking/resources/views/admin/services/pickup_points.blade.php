@@ -391,10 +391,16 @@
     const serviceLng = {{ $service->longitude ?? 'null' }};
     const hasServiceLocation = serviceLat !== null && serviceLng !== null;
 
-    // Initialize map — start at service location, or a neutral center if not set
-    const initialLat = hasServiceLocation ? serviceLat : 37.9;
-    const initialLng = hasServiceLocation ? serviceLng : 23.7;
-    const map = L.map('map-container').setView([initialLat, initialLng], hasServiceLocation ? 11 : 5);
+    // Destination location coordinates (fallback)
+    const destLat = {{ $service->destination->latitude ?? 'null' }};
+    const destLng = {{ $service->destination->longitude ?? 'null' }};
+    const hasDestLocation = destLat !== null && destLng !== null;
+
+    // Priority: service lat/lng → destination lat/lng → Greece default
+    const initialLat = hasServiceLocation ? serviceLat : (hasDestLocation ? destLat : 37.9);
+    const initialLng = hasServiceLocation ? serviceLng : (hasDestLocation ? destLng : 23.7);
+    const hasLocation = hasServiceLocation || hasDestLocation;
+    const map = L.map('map-container').setView([initialLat, initialLng], hasLocation ? 11 : 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'

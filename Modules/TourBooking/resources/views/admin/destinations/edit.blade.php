@@ -144,6 +144,32 @@
                                                     </div>
                                                 </div>
 
+                                                <div class="col-lg-3 col-md-6 col-12">
+                                                    <div class="crancy__item-form--group mg-top-form-20">
+                                                        <label class="crancy__item-label">{{ __('translate.Latitude') }}</label>
+                                                        <input class="crancy__item-input" type="text"
+                                                            name="latitude" id="latitude"
+                                                            value="{{ old('latitude', $destination->latitude) }}"
+                                                            placeholder="e.g. 35.2401">
+                                                        @error('latitude')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-3 col-md-6 col-12">
+                                                    <div class="crancy__item-form--group mg-top-form-20">
+                                                        <label class="crancy__item-label">{{ __('translate.Longitude') }}</label>
+                                                        <input class="crancy__item-input" type="text"
+                                                            name="longitude" id="longitude"
+                                                            value="{{ old('longitude', $destination->longitude) }}"
+                                                            placeholder="e.g. 24.4700">
+                                                        @error('longitude')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
                                                 <div class="col-12">
                                                     <div class="crancy__item-form--group mg-top-form-20">
                                                         <label

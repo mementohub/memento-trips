@@ -793,7 +793,7 @@ final class ServiceController extends Controller
     /** Pickup Points: list */
     public function showPickupPoints(Service $service): View
     {
-        $service->load('pickupPoints');
+        $service->load(['pickupPoints', 'destination']);
         return view('tourbooking::admin.services.pickup_points', compact('service'));
     }
 
