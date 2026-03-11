@@ -386,12 +386,36 @@
   "use strict";
 
   $(function(){
-    // Initialize map
-    const map = L.map('map-container').setView([{{ $service->latitude ?? '40.7128' }}, {{ $service->longitude ?? '-74.0060' }}], 10);
-    
+    // Service location coordinates
+    const serviceLat = {{ $service->latitude ?? 'null' }};
+    const serviceLng = {{ $service->longitude ?? 'null' }};
+    const hasServiceLocation = serviceLat !== null && serviceLng !== null;
+
+    // Initialize map — start at service location, or a neutral center if not set
+    const initialLat = hasServiceLocation ? serviceLat : 37.9;
+    const initialLng = hasServiceLocation ? serviceLng : 23.7;
+    const map = L.map('map-container').setView([initialLat, initialLng], hasServiceLocation ? 11 : 5);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
+    // Collect all marker bounds for auto-fit
+    const bounds = [];
+
+    // Add service location marker (blue) so admin can see where the trip is
+    if (hasServiceLocation) {
+      const serviceIcon = L.divIcon({
+        className: 'custom-pickup-marker',
+        html: '<i class="fa fa-map-marker" style="color: #3b82f6; font-size: 30px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);"></i>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30]
+      });
+      L.marker([serviceLat, serviceLng], { icon: serviceIcon })
+        .addTo(map)
+        .bindPopup(`<div class="pickup-point-popup"><h6><i class="fa fa-flag"></i> {{ $service->title }}</h6><p>{{ __('translate.Service Location') }}</p></div>`);
+      bounds.push([serviceLat, serviceLng]);
+    }
 
     // Add existing pickup points to map
     const pickupPoints = @json($service->pickupPoints->toArray());
@@ -406,6 +430,7 @@
       });
 
       const marker = L.marker([pickup.latitude, pickup.longitude], {icon: icon}).addTo(map);
+      bounds.push([pickup.latitude, pickup.longitude]);
 
       const extraCharge = pickup.extra_charge > 0 ? 
         `<p class="charge">Price: ${pickup.extra_charge}</p>` :
@@ -420,6 +445,13 @@
         </div>
       `);
     });
+
+    // Auto-fit map to show all markers
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [40, 40] });
+    } else if (bounds.length === 1) {
+      map.setView(bounds[0], 13);
+    }
 
     // Map click to set coordinates
     map.on('click', function(e) {

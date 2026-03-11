@@ -2243,8 +2243,8 @@ return [
         console.log('Initializing modal map...');
 
         // Default to service location or a general location
-        const defaultLat = {{ $service->latitude ?? '40.7128' }};
-        const defaultLng = {{ $service->longitude ?? '-74.0060' }};
+        const defaultLat = {{ $service->latitude ?? '35.24' }};
+        const defaultLng = {{ $service->longitude ?? '24.47' }};
 
     try {
         this.pickupModalMap = L.map('pickup-map-container-modal').setView([defaultLat, defaultLng], 12);
