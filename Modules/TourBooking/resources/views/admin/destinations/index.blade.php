@@ -124,6 +124,14 @@
                                     </table>
                                 </div>
 
+                                @if ($destinations->hasPages())
+                                <div class="crancy-table-pagination d-flex justify-content-between align-items-center mt-20 px-3 pb-3">
+                                    <span class="text-muted" style="font-size: 14px;">
+                                        Showing {{ $destinations->firstItem() }}–{{ $destinations->lastItem() }} of {{ $destinations->total() }} destinations
+                                    </span>
+                                    {{ $destinations->links('pagination::bootstrap-5') }}
+                                </div>
+                                @endif
 
                             </div>
                         </div>
