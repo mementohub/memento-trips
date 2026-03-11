@@ -353,7 +353,7 @@ final class FrontServiceController extends Controller
 
         $amenities     = Amenity::where('status', true)->with('translation:id,amenity_id,lang_code,name')->get();
         $languages     = Language::cases();
-        $destinations  = Destination::where('status', true)->get();
+        $destinations  = Destination::where('status', true)->withCount('services')->orderBy('ordering', 'asc')->get();
         $tripTypes     = TripType::withCount('services')->where('status', true)->get();
 
         return view($serviceView, compact('serviceTypes', 'amenities', 'languages', 'destinations', 'breadcrumb_title', 'tripTypes'));

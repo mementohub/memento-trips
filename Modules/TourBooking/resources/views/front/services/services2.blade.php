@@ -86,6 +86,9 @@ $enum_languages = App\Enums\Language::cases();
                   <li @click="selectDestination('{{ $d->id }}','{{ addslashes($d->name) }}')"
                     data-name="{{ strtolower($d->name) }}">
                     <i class="fa-regular fa-location-dot"></i><span>{{ $d->name }}</span>
+                    @if($d->services_count > 0)
+                    <span style="background:#ff4200;color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;margin-left:auto;">{{ $d->services_count }}</span>
+                    @endif
                   </li>
                   @endforeach
                   <li class="no-results dd-hidden" x-ref="destNoResults">No results found</li>

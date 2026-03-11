@@ -115,6 +115,7 @@ Route::group(['as' => 'admin.tourbooking.', 'prefix' => 'admin/tourbooking', 'mi
     Route::resource('destinations', DestinationController::class);
     Route::put('destinations/{destination}/status', [DestinationController::class, 'updateStatus'])->name('destinations.update-status');
     Route::put('destinations/{destination}/featured', [DestinationController::class, 'updateFeatured'])->name('destinations.update-featured');
+    Route::put('destinations/{destination}/update-ordering', [DestinationController::class, 'updateOrdering'])->name('destinations.update-ordering');
 
     // Amenities
     Route::resource('amenities', AmenitiesController::class);

@@ -38,6 +38,7 @@
                                                 <th class="crancy-table__column-2 crancy-table__h2 sorting">Country</th>
                                                 <th class="crancy-table__column-2 crancy-table__h2 sorting">Status</th>
                                                 <th class="crancy-table__column-2 crancy-table__h2 sorting">Featured</th>
+                                                <th class="crancy-table__column-2 crancy-table__h2 sorting">Order</th>
                                                 <th class="crancy-table__column-2 crancy-table__h2 sorting">Created At</th>
                                                 <th class="crancy-table__column-2 crancy-table__h2 sorting">Actions</th>
                                             </tr>
@@ -74,6 +75,13 @@
                                                         @else
                                                             <span class="badge badge-secondary">No</span>
                                                         @endif
+                                                    </td>
+                                                    <td class="crancy-table__column-2 crancy-table__data-2">
+                                                        <input type="number" min="0" value="{{ $destination->ordering ?? 0 }}"
+                                                            class="form-control form-control-sm ordering-input"
+                                                            data-id="{{ $destination->id }}"
+                                                            style="width: 70px; text-align: center;"
+                                                            onchange="updateOrdering(this)">
                                                     </td>
                                                     <td class="crancy-table__column-2 crancy-table__data-2">
                                                         {{ $destination->created_at->format('d M, Y') }}
@@ -116,7 +124,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="8" class="text-center">No
+                                                    <td colspan="9" class="text-center">No
                                                         destinations found</td>
                                                 </tr>
                                             @endforelse
@@ -205,6 +213,33 @@
                 error: function(err) {
                     console.log(err);
                     toastr.error('An error occurred while updating status');
+                }
+            })
+        }
+
+        function updateOrdering(el) {
+            var appMODE = "{{ config('app.mode') }}"
+            if (appMODE == 'DEMO') {
+                toastr.error('This Is Demo Version. You Can Not Change Anything');
+                return;
+            }
+
+            var id = $(el).data('id');
+            var ordering = $(el).val();
+
+            $.ajax({
+                type: "PUT",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ordering: ordering
+                },
+                url: "{{ url('admin/tourbooking/destinations') }}/" + id + "/update-ordering",
+                success: function(response) {
+                    toastr.success(response.message || 'Order updated');
+                },
+                error: function(err) {
+                    console.log(err);
+                    toastr.error('An error occurred while updating order');
                 }
             })
         }

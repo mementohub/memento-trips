@@ -29,7 +29,7 @@ final class DestinationController extends Controller
     {
         $destinations = Destination::with('translation')
             ->withCount('services')
-            ->latest()
+            ->orderBy('ordering', 'asc')
             ->paginate(15);
 
         return view('tourbooking::admin.destinations.index', compact('destinations'));
@@ -203,5 +203,12 @@ final class DestinationController extends Controller
         $notify_message = array('message' => $notify_message, 'alert-type' => 'success');
 
         return response()->json($notify_message);
+    }
+
+    public function updateOrdering(Request $request, Destination $destination): JsonResponse
+    {
+        $destination->update(['ordering' => (int) $request->ordering]);
+
+        return response()->json(['message' => 'Order updated successfully', 'alert-type' => 'success']);
     }
 }
