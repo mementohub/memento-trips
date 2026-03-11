@@ -238,8 +238,8 @@ $enum_languages = App\Enums\Language::cases();
                     <li x-show="showPropertyType || {{ $key }} < 4" x-transition>
                       <div class="checkbox d-flex">
                         <input value="{{ $serviceType?->id }}" x-model="filters.service_type_ids" class="tg-checkbox"
-                          type="checkbox" id="australia_{{ $key }}">
-                        <label for="australia_{{ $key }}" class="tg-label">{{ $serviceType?->name }}</label>
+                          type="checkbox" id="type_{{ $key }}">
+                        <label for="type_{{ $key }}" class="tg-label">{{ $serviceType?->name }}</label>
                       </div>
                     </li>
                     @endforeach
@@ -258,7 +258,7 @@ $enum_languages = App\Enums\Language::cases();
               </div>
 
               <div class="tg-filter-price-input">
-                <h4 class="tg-filter-title mb-20">Price By Filter</h4>
+                <h4 class="tg-filter-title mb-20">Price Range</h4>
                 <div class="d-flex align-items-center">
                   <input class="input no-arrow" x-model="filters.min_price" type="number" placeholder="Min Price">
                   <span class="dvdr">
@@ -272,13 +272,13 @@ $enum_languages = App\Enums\Language::cases();
               <span class="tg-filter-border mt-25 mb-25"></span>
 
               <div x-data="{ showAmenity: false }">
-                <h4 class="tg-filter-title mb-15">Amenities</h4>
+                <h4 class="tg-filter-title mb-15">Included</h4>
                 <div class="tg-filter-list">
                   <ul>
                     @foreach ($amenities as $key => $amenity)
                     <li x-show="showAmenity || {{ $key }} < 4" x-transition>
                       <div class="checkbox d-flex">
-                        <input value="{{ $amenity?->translation?->id }}" x-model="filters.amenity_ids"
+                        <input value="{{ $amenity->id }}" x-model="filters.amenity_ids"
                           class="tg-checkbox" type="checkbox" id="amenity_{{ $key }}">
                         <label for="amenity_{{ $key }}" class="tg-label">{{ $amenity?->translation?->name }}</label>
                       </div>
@@ -298,7 +298,7 @@ $enum_languages = App\Enums\Language::cases();
                 <span class="tg-filter-border mt-25 mb-25"></span>
               </div>
 
-              <h4 class="tg-filter-title mb-15">Top Reviews</h4>
+              <h4 class="tg-filter-title mb-15">Rating</h4>
               <div class="tg-filter-list">
                 <ul>
                   @for ($i = 5; $i >= 1; $i--)
@@ -323,7 +323,7 @@ $enum_languages = App\Enums\Language::cases();
               <span class="tg-filter-border mt-25 mb-25"></span>
 
               <div x-data="{ showMoreLanguages: false }">
-                <h4 class="tg-filter-title mb-15">Language</h4>
+                <h4 class="tg-filter-title mb-15">Guide Language</h4>
                 <div class="tg-filter-list">
                   <ul>
                     @foreach ($languages as $key => $language)

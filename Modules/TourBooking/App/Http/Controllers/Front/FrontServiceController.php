@@ -419,8 +419,12 @@ final class FrontServiceController extends Controller
                 return $query->where('destination_id', $request->destination_id);
             })
             ->when($request->filled('ratings') && is_array($request->ratings), function ($query) use ($request) {
-                $minRating = min($request->ratings);
-                $query->having('active_reviews_avg_rating', '>=', $minRating);
+                $ratings = array_map('intval', $request->ratings);
+                $query->where(function ($q) use ($ratings) {
+                    foreach ($ratings as $rating) {
+                        $q->orWhereRaw('(SELECT AVG(r.rating) FROM reviews r WHERE r.service_id = services.id AND r.status = 1) >= ?', [$rating]);
+                    }
+                });
             })
             ->when($request->filled('ratting') && $request->ratting != 'default', function ($query) use ($request) {
                 $query->having('active_reviews_avg_rating', '>=', $request->ratting);
