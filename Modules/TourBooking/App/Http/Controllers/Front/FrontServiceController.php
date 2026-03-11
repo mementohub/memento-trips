@@ -442,7 +442,7 @@ final class FrontServiceController extends Controller
                      WHERE a.service_id = services.id
                      AND a.date = ?
                      AND a.is_available = 1
-                     AND a.available_spots > 0) DESC
+                     AND (a.available_spots > 0 OR a.available_spots IS NULL)) DESC
                 ', [$date]);
             })
             ->when($request->filled('sort_by'), function ($query) use ($request) {
