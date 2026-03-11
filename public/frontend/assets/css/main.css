@@ -10306,7 +10306,8 @@ only screen and (min-width: 576px) and (max-width: 767px),
 
 .tg-tour-about-rating-category ul {
   display: grid;
-  grid-template-columns: repeat(2, 270px);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 20px;
   list-style: none;
   margin: 27px 0 0 5px;
   padding: 0;
@@ -10314,7 +10315,7 @@ only screen and (min-width: 576px) and (max-width: 767px),
 
 @media (max-width: 575px) {
   .tg-tour-about-rating-category ul {
-    grid-template-columns: repeat(1, 270px);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -10324,13 +10325,14 @@ only screen and (min-width: 576px) and (max-width: 767px),
 }
 
 .tg-tour-about-rating-category ul li label {
-  width: 100px;
-  max-width: 100px;
+  width: 150px;
+  min-width: 150px;
   font-weight: 500;
   font-size: 16px;
   line-height: 150%;
   text-transform: capitalize;
   color: var(--tg-grey-1);
+  white-space: nowrap;
 }
 
 .tg-tour-about-rating-category ul li .rating-icon i {
