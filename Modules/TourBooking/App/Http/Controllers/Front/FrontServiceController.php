@@ -783,7 +783,7 @@ final class FrontServiceController extends Controller
         $service = Service::findOrFail($request->service_id);
         
         $pickupPoints = $service->activePickupPoints()
-            ->select('id', 'name', 'description', 'address', 'latitude', 'longitude', 'extra_charge', 'charge_type', 'is_default')
+            ->select('id', 'name', 'description', 'address', 'latitude', 'longitude', 'extra_charge', 'charge_type', 'age_category_prices', 'is_default')
             ->get();
 
         // Calculate distances if user location provided
@@ -798,20 +798,23 @@ final class FrontServiceController extends Controller
         }
 
         $response = $pickupPoints->map(function ($pickup) {
+            $hasCharge = $pickup->charge_type === 'per_person'
+                ? !empty(array_filter($pickup->age_category_prices ?? [], fn($p) => (float)$p > 0))
+                : $pickup->hasExtraCharge();
+
             return [
-                'id'           => $pickup->id,
-                'name'         => $pickup->name,
-                'description'  => $pickup->description,
-                'address'      => $pickup->address,
-                'coordinates'  => $pickup->coordinates,
-                'extra_charge' => $pickup->extra_charge,
-                'charge_type'  => $pickup->charge_type,
-                'formatted_charge' => $pickup->hasExtraCharge() ? 
-                    currency($pickup->extra_charge) . ($pickup->charge_type !== 'flat' ? ' / ' . ucfirst(str_replace('per_', '', $pickup->charge_type)) : '') : 
-                    'Free',
-                'is_default'   => $pickup->is_default,
-                'distance'     => $pickup->distance ?? null,
-                'has_charge'   => $pickup->hasExtraCharge(),
+                'id'                   => $pickup->id,
+                'name'                 => $pickup->name,
+                'description'          => $pickup->description,
+                'address'              => $pickup->address,
+                'coordinates'          => $pickup->coordinates,
+                'extra_charge'         => $pickup->extra_charge,
+                'charge_type'          => $pickup->charge_type,
+                'age_category_prices'  => $pickup->age_category_prices,
+                'formatted_charge'     => $pickup->formatted_extra_charge,
+                'is_default'           => $pickup->is_default,
+                'distance'             => $pickup->distance ?? null,
+                'has_charge'           => $hasCharge,
             ];
         });
 

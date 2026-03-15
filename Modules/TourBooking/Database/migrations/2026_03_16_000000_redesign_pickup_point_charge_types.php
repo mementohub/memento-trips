@@ -9,8 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Add age_category_prices JSON column
+        // Make address/coords optional + add age_category_prices
         Schema::table('pickup_points', function (Blueprint $table) {
+            $table->string('address')->nullable()->change();
+            $table->decimal('latitude', 10, 8)->nullable()->change();
+            $table->decimal('longitude', 11, 8)->nullable()->change();
             $table->json('age_category_prices')->nullable()->after('charge_type')
                   ->comment('Per-person age category prices: {adult: X, child: Y, baby: Z, infant: W}');
         });

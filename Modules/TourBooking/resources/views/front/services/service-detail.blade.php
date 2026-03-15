@@ -1301,9 +1301,7 @@
                                             <div>
                                                 <i class="fa fa-map-marker text-muted me-2"></i>
                                                 <span class="text-muted">{{ __('No pickup point selected') }}</span>
-                                            </div>
-                                            <small class="text-primary">{{ __('Click to choose') }} <i
-                                                    class="fa fa-chevron-right"></i></small>
+                                        </div>
                                         </div>
                                     </div>
 
@@ -1318,18 +1316,29 @@
                                                 </div>
                                                 <small class="text-muted d-block"
                                                     x-text="selectedPickupPoint?.address || ''"></small>
-                                                <div class="charge-display mt-2 d-flex flex-wrap gap-2">
-                                                    <span class="badge"
-                                                        :class="selectedPickupPoint?.has_charge ? 'bg-danger' : 'bg-success'"
-                                                        x-text="selectedPickupPoint?.formatted_charge || 'Free'"></span>
+                                                <div class="charge-display mt-2 d-flex flex-wrap gap-1">
+                                                    {{-- Per-booking or free --}}
+                                                    <template x-if="selectedPickupPoint?.charge_type !== 'per_person'">
+                                                        <span class="badge"
+                                                            :class="selectedPickupPoint?.has_charge ? 'bg-danger' : 'bg-success'"
+                                                            x-text="selectedPickupPoint?.formatted_charge || 'Free'"></span>
+                                                    </template>
+                                                    {{-- Per-person: age breakdown --}}
+                                                    <template x-if="selectedPickupPoint?.charge_type === 'per_person' && selectedPickupPoint?.age_category_prices">
+                                                        <div class="d-flex flex-wrap gap-1">
+                                                            <template x-for="cat in ['adult','child','baby','infant']" :key="cat">
+                                                                <span x-show="selectedPickupPoint.age_category_prices[cat] && parseFloat(selectedPickupPoint.age_category_prices[cat]) > 0"
+                                                                    class="badge bg-danger" style="font-size:11px;font-weight:500;">
+                                                                    <span x-text="cat.charAt(0).toUpperCase() + cat.slice(1)"></span>:
+                                                                    <span x-text="calculatePrice(parseFloat(selectedPickupPoint.age_category_prices[cat]))"></span>
+                                                                </span>
+                                                            </template>
+                                                        </div>
+                                                    </template>
                                                     <span x-show="selectedPickupPoint?.distance"
                                                         class="badge bg-secondary"
                                                         x-text="(selectedPickupPoint?.distance || 0) + ' km away'"></span>
                                                 </div>
-                                            </div>
-                                            <div class="change-btn">
-                                                <small class="text-primary">{{ __('Change') }} <i
-                                                        class="fa fa-edit"></i></small>
                                             </div>
                                         </div>
                                     </div>
@@ -1490,9 +1499,24 @@
                                                                 x-text="pickup?.description || ''"></p>
 
                                                             <div>
-                                                                <span class="badge fs-6"
-                                                                    :class="pickup?.has_charge ? 'bg-danger' : 'bg-success'"
-                                                                    x-text="pickup?.formatted_charge || 'Free'"></span>
+                                                                {{-- Per-booking or free: simple badge --}}
+                                                                <template x-if="pickup?.charge_type !== 'per_person'">
+                                                                    <span class="badge fs-6"
+                                                                        :class="pickup?.has_charge ? 'bg-danger' : 'bg-success'"
+                                                                        x-text="pickup?.formatted_charge || 'Free'"></span>
+                                                                </template>
+                                                                {{-- Per-person: age breakdown --}}
+                                                                <template x-if="pickup?.charge_type === 'per_person' && pickup?.age_category_prices">
+                                                                    <div class="d-flex flex-wrap gap-1">
+                                                                        <template x-for="cat in ['adult','child','baby','infant']" :key="cat">
+                                                                            <span x-show="pickup.age_category_prices[cat] && parseFloat(pickup.age_category_prices[cat]) > 0"
+                                                                                class="badge bg-danger" style="font-size:11px;font-weight:500;">
+                                                                                <span x-text="cat.charAt(0).toUpperCase() + cat.slice(1)"></span>:
+                                                                                <span x-text="calculatePrice(parseFloat(pickup.age_category_prices[cat]))"></span>
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2232,7 +2256,8 @@ return [
                 address: pickup.address || '',
                 coordinates: pickup.coordinates || { lat: 0, lng: 0 },
                 extra_charge: pickup.extra_charge || 0,
-                charge_type: pickup.charge_type || 'flat',
+                charge_type: pickup.charge_type || 'per_booking',
+                age_category_prices: pickup.age_category_prices || null,
                 formatted_charge: pickup.formatted_charge || 'Free',
                 is_default: pickup.is_default || false,
                 distance: pickup.distance || null,
@@ -2351,7 +2376,13 @@ return [
                             <p class="mb-1"><i class="fa fa-map-pin"></i> ${pickup.address || 'No address'}</p>
                             <p class="mb-1">
                                 <i class="fa ${pickup.has_charge ? 'fa-money text-danger' : 'fa-check-circle text-success'}"></i>
-                                <strong>${pickup.formatted_charge || 'Free'}</strong>
+                                ${pickup.charge_type === 'per_person' && pickup.age_category_prices
+                                    ? Object.entries(pickup.age_category_prices)
+                                        .filter(([, p]) => parseFloat(p) > 0)
+                                        .map(([cat, p]) => `<span style="display:inline-block;margin:2px 4px;"><strong>${cat.charAt(0).toUpperCase() + cat.slice(1)}:</strong> ${this.calculatePrice(parseFloat(p))}</span>`)
+                                        .join('')
+                                    : `<strong>${pickup.formatted_charge || 'Free'}</strong>`
+                                }
                             </p>
                             ${distanceText}
                             ${pickup.description ? `<p class="mb-0"><i class="fa fa-info-circle"></i> ${pickup.description}</p>` : ''}
