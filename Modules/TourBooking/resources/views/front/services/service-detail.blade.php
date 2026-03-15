@@ -2572,17 +2572,24 @@ return [
                 };
 
                 this.locationLoading = false;
-                this.fetchPickupPoints(); // Refetch with location data
+                this.fetchPickupPoints(); // Refetch with location data — sorts by distance
 
-                if (this.pickupMap) {
-                    this.pickupMap.setView([this.userLocation.lat, this.userLocation.lng], 13);
+                // Recenter the modal map on user location
+                if (this.pickupModalMap) {
+                    this.pickupModalMap.setView([this.userLocation.lat, this.userLocation.lng], 13);
+                    // Markers refresh automatically via fetchPickupPoints → updateMapMarkers
                 }
             },
             (error) => {
                 this.locationLoading = false;
                 console.error('Error getting location:', error);
-                alert('{{ __('Unable to get your location') }}');
-            }
+                let msg = '{{ __('Unable to get your location') }}';
+                if (error.code === 1) msg = '{{ __('Location permission denied. Please allow location access.') }}';
+                else if (error.code === 2) msg = '{{ __('Location unavailable.') }}';
+                else if (error.code === 3) msg = '{{ __('Location request timed out.') }}';
+                alert(msg);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
     },
 

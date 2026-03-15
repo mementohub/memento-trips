@@ -792,9 +792,13 @@ final class FrontServiceController extends Controller
             $userLng = (float) $request->user_lng;
 
             $pickupPoints = $pickupPoints->map(function ($pickup) use ($userLat, $userLng) {
-                $pickup->distance = $pickup->distanceFrom($userLat, $userLng);
+                if ($pickup->latitude && $pickup->longitude) {
+                    $pickup->distance = $pickup->distanceFrom($userLat, $userLng);
+                } else {
+                    $pickup->distance = null;
+                }
                 return $pickup;
-            })->sortBy('distance');
+            })->sortBy('distance')->values();
         }
 
         $response = $pickupPoints->map(function ($pickup) {

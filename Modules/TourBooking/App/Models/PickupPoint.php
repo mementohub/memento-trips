@@ -140,11 +140,14 @@ final class PickupPoint extends Model
     {
         $earthRadius = 6371; // km
 
-        $deltaLat = deg2rad($lat - $this->latitude);
-        $deltaLng = deg2rad($lng - $this->longitude);
+        $selfLat = (float) $this->latitude;
+        $selfLng = (float) $this->longitude;
+
+        $deltaLat = deg2rad($lat - $selfLat);
+        $deltaLng = deg2rad($lng - $selfLng);
 
         $a = sin($deltaLat/2) * sin($deltaLat/2) +
-             cos(deg2rad($this->latitude)) * cos(deg2rad($lat)) *
+             cos(deg2rad($selfLat)) * cos(deg2rad($lat)) *
              sin($deltaLng/2) * sin($deltaLng/2);
 
         $c = 2 * atan2(sqrt($a), sqrt(1-$a));
