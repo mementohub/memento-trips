@@ -78,7 +78,10 @@ final class BookingController extends Controller
             ->where('user_id', auth()->user()->id)
             ->findOrFail($request->id);
 
-        return view('tourbooking::user.booking.details', compact('booking'));
+        $extra_services = \Modules\TourBooking\App\Models\ExtraCharge::whereIn('id', $booking?->extra_services ?? [])
+            ->get();
+
+        return view('tourbooking::user.booking.details', compact('booking', 'extra_services'));
     }
 
     /**

@@ -71,6 +71,7 @@ final class Booking extends Model
         'age_quantities',
         'age_config',
         'age_breakdown',
+        'booking_date',
     ];
 
     protected $casts = [

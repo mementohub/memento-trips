@@ -338,6 +338,7 @@ if ($auth_user) {
             'booking_code'     => Booking::generateBookingCode(),
             'check_in_date'    => $validated['check_in_date'],
             'check_out_date'   => $validated['check_out_date'],
+            'booking_date'     => $validated['check_in_date'],
             'adults'           => $validated['adults'],
             'children'         => $validated['children'] ?? 0,
             'infants'          => $validated['infants'] ?? 0,

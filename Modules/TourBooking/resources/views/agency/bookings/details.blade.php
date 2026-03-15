@@ -9,559 +9,241 @@
 @endsection
 
 @section('body-content')
-    <!-- crancy Dashboard -->
-    <section class="crancy-adashboard crancy-show">
-        <div class="container container__bscreen">
-            <div class="row">
-                <div class="col-12">
-                    <div class="crancy-body">
-                        <!-- Dashboard Inner -->
-                        <div class="crancy-dsinner">
+@php
+    $decode = function ($v) {
+        if (is_array($v)) return $v;
+        if (is_string($v)) { $d = json_decode($v, true); return json_last_error() === JSON_ERROR_NONE ? ($d ?: []) : []; }
+        return [];
+    };
+    $ageBreakdown  = $decode($booking->age_breakdown ?? []);
+    $ageQuantities = $decode($booking->age_quantities ?? []);
+    $ageConfig     = $decode($booking->age_config ?? []);
 
-                            <div class="row justify-content-center">
-                                <div class="col-10 mg-top-30">
-                                    <div class="ed-invoice-page-wrapper">
-                                        <div class="ed-invoice-main-wrapper">
-
-                                            <div class="ed-invoice-page">
-                                                <div class="ed-inv-logo-area">
-                                                    <div class="ed-main-logo">
-                                                        <img src="{{ asset($general_setting->logo) }}" alt="logo"
-                                                            class="ed-logo">
-                                                    </div>
-                                                    <div>
-                                                        <a href="{{ route('agency.tourbooking.bookings.index') }}"
-                                                            class="crancy-btn"><i class="fa fa-arrow-left"></i>
-                                                            {{ __('translate.Back') }}</a>
-
-                                                        
-
-                                                        @if ($booking->booking_status == 'pending' || $booking->booking_status == 'success')
-                                                            <a href="#" class="crancy-btn crancy-btn__success"
-                                                                data-bs-toggle="modal" data-bs-target="#confirmModal">
-                                                                <i class="fa fa-check"></i>
-                                                                {{ __('translate.Confirm Booking') }}
-                                                            </a>
-                                                            <a href="#" class="crancy-btn crancy-btn__danger"
-                                                                data-bs-toggle="modal" data-bs-target="#cancelModal">
-                                                                <i class="fa fa-times"></i>
-                                                                {{ __('translate.Cancel Booking') }}
-                                                            </a>
-                                                        @endif
-                                                        <a href="{{ route('agency.tourbooking.bookings.invoice', $booking->id) }}"
-                                                            class="crancy-btn" target="_blank">
-                                                            <i class="fa fa-file-invoice"></i>
-                                                            {{ __('translate.View Invoice') }}
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div class="ed-inv-billing-info">
-                                                    <div class="ed-inv-info">
-                                                        <p class="ed-inv-info-title">{{ __('translate.Billed To') }}
-                                                        </p>
-                                                        <table>
-                                                            <tr>
-                                                                <td>{{ __('translate.Name') }}:</td>
-                                                                <td> {{ $booking->customer_name ?? 'NA' }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Phone') }}:</td>
-                                                                <td>{{ $booking?->customer_email }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Email') }}:</td>
-                                                                <td>{{ $booking?->customer_phone }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Address') }} : </td>
-                                                                <td> {{ $booking?->customer_address }}</td>
-                                                            </tr>
-                                                        </table>
-                                                    </div>
-                                                </div>
-
-                                                <div class="ed-inv-billing-info">
-                                                    <div class="ed-inv-info">
-                                                        <p class="ed-inv-info-title">
-                                                            {{ __('translate.Booking Information') }}
-                                                        </p>
-                                                        <table>
-                                                            <tr>
-                                                                <td>{{ __('translate.Invoice No') }}:</td>
-                                                                <td>#{{ $booking->booking_code }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Booking Status') }}:</td>
-                                                                <td>
-                                                                    <span
-                                                                        class="badge bg-{{ $booking->booking_status == 'confirmed' ? 'success' : ($booking->booking_status == 'pending' ? 'warning' : ($booking->booking_status == 'cancelled' ? 'danger' : 'info')) }}">
-                                                                        {{ ucfirst($booking->booking_status) }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Payment Status') }} : </td>
-                                                                <td>
-                                                                    <span
-                                                                        class="badge bg-{{ $booking->payment_status == 'completed' ? 'success' : 'warning' }}">
-                                                                        {{ ucfirst($booking->payment_status) }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Payment Method') }} : </td>
-                                                                <td>
-                                                                    {{ ucfirst($booking->payment_method) }}
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Total Amount') }} : </td>
-                                                                <td>
-                                                                    {{ currency($booking->total) }}
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Paid Amount') }} : </td>
-                                                                <td>
-                                                                    {{ currency($booking->paid_amount) }}
-                                                                </td>
-                                                            </tr>
-                                                            @if ($booking->due_amount > 0)
-                                                                <tr>
-                                                                    <td>{{ __('translate.Due Amount') }} : </td>
-                                                                    <td>
-                                                                        {{ currency($booking->due_amount) }}
-                                                                    </td>
-                                                                </tr>
-                                                            @endif
-                                                        </table>
-
-                                                    </div>
-                                                    <div class="ed-inv-info">
-                                                        <p class="ed-inv-info-title">
-                                                            {{ __('translate.Service Information') }}
-                                                        </p>
-                                                        
-                                                        @php
-    $pickup = null;
-
-    // 1) preferăm pickup_point_id
-    if (!empty($booking->pickup_point_id)) {
-        $pickup = \DB::table('pickup_points')
-            ->select('id', 'name', 'address', 'latitude', 'longitude')
-            ->where('id', (int)$booking->pickup_point_id)
-            ->first();
+    if (empty($ageBreakdown) && !empty($ageQuantities)) {
+        foreach ($ageQuantities as $k => $qty) {
+            $qty = (int)$qty;
+            if ($qty <= 0) continue;
+            $label = $ageConfig[$k]['label'] ?? ucfirst((string)$k);
+            $price = (float)($ageConfig[$k]['price'] ?? 0);
+            $ageBreakdown[$k] = ['label' => $label, 'qty' => $qty, 'price' => $price, 'line' => $price * $qty];
+        }
     }
 
-    // 2) fallback: caută după numele salvat pe booking (pickup_point_name)
-    if (!$pickup && !empty($booking->pickup_point_name)) {
-        $pickup = \DB::table('pickup_points')
-            ->select('id', 'name', 'address', 'latitude', 'longitude')
-            ->where('name', (string)$booking->pickup_point_name)
-            ->first();
+    $badgeClass = fn($s) => match (strtolower((string)$s)) {
+        'confirmed','success','completed' => 'bd-badge--success',
+        'pending'                         => 'bd-badge--warning',
+        'cancelled'                       => 'bd-badge--danger',
+        default                           => 'bd-badge--info',
+    };
+
+    // Reconstruct individual extra charge lines from service
+    $reconstructedExtras = [];
+    $reconstructedTotal  = 0;
+    if ($booking->service_id) {
+        $serviceExtras = \Modules\TourBooking\App\Models\ExtraCharge::where('service_id', $booking->service_id)
+            ->where('status', 1)->get();
+        $pax = ['adult' => 0, 'child' => 0, 'baby' => 0, 'infant' => 0];
+        foreach ($ageBreakdown as $key => $row) { $pax[$key] = (int)($row['qty'] ?? 0); }
+        if (array_sum($pax) === 0) {
+            $pax['adult'] = (int)$booking->adults;
+            $pax['child'] = (int)$booking->children;
+            $pax['infant'] = (int)($booking->infants ?? 0);
+        }
+        $totalPax = array_sum($pax);
+        $ticketSum = 0;
+        foreach ($ageBreakdown as $row) { $ticketSum += (float)($row['line'] ?? 0); }
+
+        foreach ($serviceExtras as $ex) {
+            $isTax     = (bool)($ex->is_tax ?? false);
+            $priceType = (string)($ex->price_type ?? 'flat');
+            $price     = (float)($ex->price ?? 0);
+            $lineAmt   = 0;
+
+            if ($isTax) {
+                $lineAmt = round(((float)($ex->tax_percentage ?? 0) / 100) * $ticketSum, 2);
+            } elseif (in_array($priceType, ['flat','per_booking'])) {
+                $lineAmt = $price;
+            } elseif ($priceType === 'per_person') {
+                $aP = (float)($ex->adult_price ?? $price); $cP = (float)($ex->child_price ?? 0);
+                $iP = (float)($ex->infant_price ?? 0); $bP = (float)($ex->baby_price ?? 0);
+                $lineAmt = ($aP > 0 || $cP > 0 || $iP > 0 || $bP > 0)
+                    ? ($pax['adult']*$aP + $pax['child']*$cP + $pax['infant']*$iP + $pax['baby']*$bP)
+                    : $price * $totalPax;
+            }
+            $lineAmt = round($lineAmt, 2);
+            if ($lineAmt > 0 || (bool)($ex->is_mandatory ?? false)) {
+                $reconstructedExtras[] = ['name' => $ex->name, 'amount' => $lineAmt, 'type' => $priceType];
+                $reconstructedTotal += $lineAmt;
+            }
+        }
     }
 
-    $pickupMapUrl = null;
-    if ($pickup && $pickup->latitude !== null && $pickup->longitude !== null) {
-        $pickupMapUrl = 'https://www.google.com/maps/search/?api=1&query=' . urlencode($pickup->latitude . ',' . $pickup->longitude);
-    }
-@endphp
-                                                        
-                                                        
-                                                        <table>
-                                                            <tr>
-                                                                <td>{{ __('translate.Title') }}:</td>
-                                                                <td> {{ $booking->service->title ?? 'NA' }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>{{ __('translate.Location') }} : </td>
-                                                                <td>{{ $booking?->service?->location }}</td>
-                                                            </tr>
-                                                            
-                                                            
-                                                            @if ($pickup)
-    <tr>
-        <td>{{ __('translate.Pickup') }} :</td>
-        <td>
-            <div class="d-flex flex-column gap-1">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="fw-semibold">{{ $pickup->name }}</span>
-
-                    @if ($pickupMapUrl)
-                        <a href="{{ $pickupMapUrl }}"
-                           target="_blank"
-                           rel="noopener"
-                           class="badge bg-primary text-decoration-none">
-                            <i class="fa fa-map-marker-alt me-1"></i> Google Maps
-                        </a>
-                    @endif
-                </div>
-
-                @if (!empty($pickup->address))
-                    <div class="text-muted small">{{ $pickup->address }}</div>
-                @endif
-
-                @if ($pickupMapUrl)
-                    <div class="text-muted small">{{ $pickup->latitude }}, {{ $pickup->longitude }}</div>
-                @endif
-            </div>
-        </td>
-    </tr>
-@elseif (!empty($booking->pickup_point_name))
-    <tr>
-        <td>{{ __('translate.Pickup') }} :</td>
-        <td>
-            <span class="fw-semibold">{{ $booking->pickup_point_name }}</span>
-        </td>
-    </tr>
-@endif
-                                                            
-
-                                                            <tr>
-                                                                <td>{{ __('translate.Adults') }} : </td>
-                                                                <td> {{ $booking?->adults }}</td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <td>{{ __('translate.Children') }} : </td>
-                                                                <td> {{ $booking?->children }}</td>
-                                                            </tr>
-                                                        </table>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mt-4">
-                                                    <div class="col-md-12">
-                                                        <div class="card">
-                                                            <div class="card-header">
-                                                                <h5 class="mb-0">
-                                                                    {{ __('translate.Price Details') }}</h5>
-                                                            </div>
-                                                            <div class="card-body">
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                @php
-    $ageQty = $booking->age_quantities;
-    if (!is_array($ageQty)) {
-        $ageQty = json_decode((string)($booking->age_quantities ?? '[]'), true) ?: [];
-    }
-
-    $ageCfg = $booking->age_config;
-    if (!is_array($ageCfg)) {
-        $ageCfg = json_decode((string)($booking->age_config ?? '[]'), true) ?: [];
-    }
-
-    $bd = $booking->age_breakdown;
-    if (!is_array($bd)) {
-        $bd = json_decode((string)($booking->age_breakdown ?? '[]'), true) ?: [];
-    }
-
-    $hasAgePricing = !empty($ageQty) && !empty($ageCfg);
-
-    // extras_total separat (dacă există)
-    $extrasTotalFromBreakdown = isset($bd['extras_total']) ? (float)$bd['extras_total'] : null;
-
-    // în DB: extra_charges = (extras + pickup) în flow-ul nou, iar pickup_charge e separat
     $pickupCharge = (float)($booking->pickup_charge ?? 0);
-    $extrasTotalFallback = max(0, (float)($booking->extra_charges ?? 0) - $pickupCharge);
-    $extrasTotal = $extrasTotalFromBreakdown !== null ? $extrasTotalFromBreakdown : $extrasTotalFallback;
+    if ($pickupCharge <= 0 && !empty($booking->pickup_point_id)) {
+        $ppRecord = \DB::table('pickup_points')->where('id', (int)$booking->pickup_point_id)->first();
+        if ($ppRecord && (float)($ppRecord->extra_charge ?? 0) > 0) {
+            $base = (float)$ppRecord->extra_charge;
+            $ct = (string)($ppRecord->charge_type ?? 'per_booking');
+            $pickupCharge = $ct === 'per_person' ? $base * $totalPax : $base;
+        }
+    }
+
+    $pickup = null;
+    if (!empty($booking->pickup_point_id)) {
+        $pickup = \DB::table('pickup_points')->select('id','name','address','latitude','longitude')->where('id', (int)$booking->pickup_point_id)->first();
+    }
+    if (!$pickup && !empty($booking->pickup_point_name)) {
+        $pickup = \DB::table('pickup_points')->select('id','name','address','latitude','longitude')->where('name', (string)$booking->pickup_point_name)->first();
+    }
+    $pickupMapUrl = ($pickup && $pickup->latitude !== null && $pickup->longitude !== null)
+        ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode($pickup->latitude . ',' . $pickup->longitude)
+        : null;
 @endphp
-                                                                
-                                                                
-                                                                <table class="table">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>{{ __('translate.Description') }}</th>
-                                                                            <th class="text-right">
-                                                                                {{ __('translate.Amount') }}</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-    @if ($hasAgePricing)
-        @foreach ($ageQty as $k => $qty)
-            @php
-                $qty = (int)$qty;
-                if ($qty <= 0) continue;
 
-                $label = data_get($ageCfg, $k . '.label', ucfirst((string)$k));
-                $unit  = (float) data_get($ageCfg, $k . '.price', 0);
-                $line  = $unit * $qty;
-            @endphp
-            <tr>
-                <td>{{ $label }} ({{ currency($unit) }} × {{ $qty }})</td>
-                <td class="text-right">{{ currency($line) }}</td>
-            </tr>
-        @endforeach
+@include('tourbooking::components._booking_detail_styles')
 
-        @if ($extrasTotal > 0)
-            <tr>
-                <td>{{ __('translate.Extra charges') }}</td>
-                <td class="text-right">{{ currency($extrasTotal) }}</td>
-            </tr>
-        @endif
+<section class="crancy-adashboard crancy-show">
+    <div class="container container__bscreen">
+        <div class="row"><div class="col-12"><div class="crancy-body"><div class="crancy-dsinner">
+            <div class="bd-page mg-top-30">
 
-        @if ($pickupCharge > 0)
-            <tr>
-                <td>{{ __('translate.Pickup') }}</td>
-                <td class="text-right">{{ currency($pickupCharge) }}</td>
-            </tr>
-        @endif
+<div class="bd-header">
+    <a href="{{ route('agency.tourbooking.bookings.index') }}" class="bd-back"><i class="fa fa-arrow-left"></i> {{ __('translate.Back') }}</a>
+    <span class="bd-code">#{{ $booking->booking_code }}</span>
+    <span class="bd-badge {{ $badgeClass($booking->booking_status) }}">{{ ucfirst($booking->booking_status) }}</span>
+    <span class="bd-badge {{ $badgeClass($booking->payment_status) }}">{{ ucfirst($booking->payment_status) }}</span>
+    @php $travelDate = $booking->booking_date ?? $booking->check_in_date ?? null; @endphp
+    <span class="bd-trip-date"><i class="fa fa-calendar-alt"></i> {{ $travelDate ? \Carbon\Carbon::parse($travelDate)->format('d M Y') : '—' }}</span>
+    <span class="bd-header-spacer"></span>
+</div>
 
-    @else
-        {{-- fallback legacy --}}
-        @if ($booking->is_per_person == 1)
-            <tr>
-                <td>{{ __('translate.Adult Price') }} ({{ currency($booking->adult_price) }} × {{ $booking->adults }} {{ __('translate.Adults') }})</td>
-                <td class="text-right">{{ currency((float)$booking->adult_price * (int)$booking->adults) }}</td>
-            </tr>
+<div class="bd-actions">
+    <a href="{{ route('agency.tourbooking.bookings.invoice', $booking->id) }}" target="_blank" class="bd-btn"><i class="fa fa-file-invoice"></i> {{ __('translate.View Invoice') }}</a>
+    <a href="{{ route('agency.tourbooking.bookings.download-invoice', $booking->id) }}" class="bd-btn"><i class="fa fa-download"></i> {{ __('translate.Download Invoice') }}</a>
+</div>
 
-            <tr>
-                <td>{{ __('translate.Child Price') }} ({{ currency($booking->child_price) }} × {{ $booking->children }} {{ __('translate.Child') }})</td>
-                <td class="text-right">{{ currency((float)$booking->child_price * (int)$booking->children) }}</td>
-            </tr>
+<div class="bd-summary">
+    <div class="bd-summary-item">
+        <div class="bd-summary-item__label">{{ __('translate.Total Amount') }}</div>
+        <div class="bd-summary-item__value">{{ currency((float)$booking->total) }}</div>
+    </div>
+    <div class="bd-summary-item">
+        <div class="bd-summary-item__label">{{ __('translate.Paid Amount') }}</div>
+        <div class="bd-summary-item__value">{{ currency((float)$booking->paid_amount) }}</div>
+    </div>
+    <div class="bd-summary-item">
+        <div class="bd-summary-item__label">{{ __('translate.Due Amount') }}</div>
+        <div class="bd-summary-item__value">{{ (float)($booking->due_amount ?? 0) > 0 ? currency((float)$booking->due_amount) : '—' }}</div>
+    </div>
+</div>
 
-            @if ((float)$booking->extra_charges > 0)
-                <tr>
-                    <td>{{ __('translate.Extra charges') }}</td>
-                    <td class="text-right">{{ currency($booking->extra_charges) }}</td>
-                </tr>
+<div class="bd-grid-2">
+    <div>
+        <div class="bd-card" style="margin-bottom:16px">
+            <div class="bd-card__hdr">{{ __('translate.Billed To') }}</div>
+            <div class="bd-card__body">
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Name') }}</span><span class="bd-kv__v">{{ $booking->customer_name ?? '—' }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Phone') }}</span><span class="bd-kv__v">{{ $booking->customer_phone ?? '—' }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Email') }}</span><span class="bd-kv__v">{{ $booking->customer_email ?? '—' }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Address') }}</span><span class="bd-kv__v">{{ $booking->customer_address ?? '—' }}</span></div>
+            </div>
+        </div>
+        <div class="bd-card">
+            <div class="bd-card__hdr">{{ __('translate.Booking Information') }}</div>
+            <div class="bd-card__body">
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Invoice No') }}</span><span class="bd-kv__v">#{{ $booking->booking_code }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Payment Method') }}</span><span class="bd-kv__v">{{ $booking->payment_method ? ucfirst($booking->payment_method) : '—' }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Booking Date') }}</span><span class="bd-kv__v">{{ $booking->created_at ? $booking->created_at->format('d M Y, H:i') : '—' }}</span></div>
+                <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Travel Date') }}</span><span class="bd-kv__v">{{ $travelDate ? \Carbon\Carbon::parse($travelDate)->format('d M Y') : '—' }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bd-card">
+        <div class="bd-card__hdr">{{ __('translate.Service Information') }}</div>
+        <div class="bd-card__body">
+            <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Title') }}</span><span class="bd-kv__v">{{ $booking->service->title ?? '—' }}</span></div>
+            <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Location') }}</span><span class="bd-kv__v">{{ $booking->service->location ?? '—' }}</span></div>
+            @if ($pickup)
+            <div class="bd-kv">
+                <span class="bd-kv__k">{{ __('translate.Pickup Point') }}</span>
+                <span class="bd-kv__v">
+                    {{ $pickup->name }}
+                    @if ($pickupMapUrl)
+                        <a href="{{ $pickupMapUrl }}" target="_blank" rel="noopener" class="bd-badge bd-badge--info" style="font-size:10px;padding:2px 6px;margin-left:4px;text-decoration:none;"><i class="fa fa-map-marker-alt"></i> Maps</a>
+                    @endif
+                    @if (!empty($pickup->address))
+                        <div style="font-size:11px;color:#9ca3af;margin-top:1px;">{{ $pickup->address }}</div>
+                    @endif
+                </span>
+            </div>
+            @elseif (!empty($booking->pickup_point_name))
+            <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Pickup Point') }}</span><span class="bd-kv__v">{{ $booking->pickup_point_name }}</span></div>
             @endif
-        @else
-            <tr>
-                <td>{{ __('translate.Service Price') }}</td>
-                <td class="text-right">{{ currency($booking->service_price) }}</td>
-            </tr>
-        @endif
-
-        @if ((int)$booking->infants > 0 && (float)$booking->infant_price > 0)
-            <tr>
-                <td>{{ __('translate.Infant Price') }} ({{ currency($booking->infant_price) }} × {{ $booking->infants }} {{ __('translate.Infants') }})</td>
-                <td class="text-right">{{ currency((float)$booking->infant_price * (int)$booking->infants) }}</td>
-            </tr>
-        @endif
-    @endif
-
-    @if ((float)$booking->discount_amount > 0)
-        <tr>
-            <td>{{ __('translate.Discount') }}</td>
-            <td class="text-right">-{{ currency($booking->discount_amount) }}</td>
-        </tr>
-    @endif
-
-    @if ((float)$booking->tax_amount > 0)
-        <tr>
-            <td>{{ __('translate.Tax') }}</td>
-            <td class="text-right">{{ currency($booking->tax_amount) }}</td>
-        </tr>
-    @endif
-
-    <tr>
-        <td><strong>{{ __('translate.Subtotal') }}</strong></td>
-        <td class="text-right"><strong>{{ currency($booking->subtotal) }}</strong></td>
-    </tr>
-</tbody>
-<tfoot>
-    <tr>
-        <th>{{ __('translate.Total') }}</th>
-        <th class="text-right">{{ currency($booking->total) }}</th>
-    </tr>
-</tfoot>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                @if ($extra_services->count() > 0)
-                                                    <div class="ed-inv-billing-info mt-5">
-                                                        <div class="ed-inv-info">
-                                                            <p class="ed-inv-info-title">
-                                                                {{ __('translate.Extra Services List') }}
-                                                            </p>
-                                                            <table>
-                                                                @foreach ($extra_services as $key => $extra)
-                                                                    <tr>
-                                                                        <td class="text-capitalize mr-2">
-                                                                            {{ $extra->name }}
-                                                                            ({{ Str::title(str_replace('_', ' ', $extra->price_type)) }})
-                                                                            -- {{ currency($extra->price) }}
-                                                                        </td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End Dashboard Inner -->
-                    </div>
-                </div>
+            <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Adults') }}</span><span class="bd-kv__v">{{ (int)$booking->adults }}</span></div>
+            <div class="bd-kv"><span class="bd-kv__k">{{ __('translate.Children') }}</span><span class="bd-kv__v">{{ (int)$booking->children }}</span></div>
+            @if(!empty($ageBreakdown))
+            <div class="bd-chips">
+                @foreach($ageBreakdown as $row)
+                <span class="bd-chip">{{ $row['label'] ?? 'Category' }} · {{ (int)($row['qty'] ?? 0) }}</span>
+                @endforeach
             </div>
-        </div>
-    </section>
-    <!-- End crancy Dashboard -->
-
-    <!-- Confirm Booking Modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">{{ __('translate.Confirm Booking') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('agency.tourbooking.bookings.confirm', ['id' => $booking->id]) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <p>{{ __('translate.Are you sure you want to confirm this booking?') }}</p>
-                        <div class="form-group">
-                            <label>{{ __('translate.Confirmation Message') }} ({{ __('translate.Optional') }})</label>
-                            <textarea class="form-control" name="confirmation_message" rows="3"
-                                placeholder="{{ __('translate.Enter message to send to customer') }}"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="crancy-btn crancy-btn__default"
-                            data-bs-dismiss="modal">{{ __('translate.Cancel') }}</button>
-                        <button type="submit"
-                            class="crancy-btn crancy-btn__success">{{ __('translate.Confirm Booking') }}</button>
-                    </div>
-                </form>
-            </div>
+            @endif
         </div>
     </div>
+</div>
 
-    <!-- Cancel Booking Modal -->
-    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelModalLabel">{{ __('translate.Cancel Booking') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('agency.tourbooking.bookings.cancel', ['id' => $booking->id]) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <p>{{ __('translate.Are you sure you want to cancel this booking?') }}</p>
-                        <div class="form-group">
-                            <label>{{ __('translate.Cancellation Reason') }} *</label>
-                            <textarea class="form-control" name="cancellation_reason" rows="3" required
-                                placeholder="{{ __('translate.Enter reason for cancellation') }}"></textarea>
-                        </div>
-                        <div class="form-group mt-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="refund" id="refundCheck">
-                                <label class="form-check-label" for="refundCheck">
-                                    {{ __('translate.Process Refund') }}
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group mt-3 refund-amount-container d-none">
-                            <label>{{ __('translate.Refund Amount') }}</label>
-                            <input type="number" class="form-control" name="refund_amount" step="0.01"
-                                min="0" max="{{ $booking->paid_amount }}" value="{{ $booking->paid_amount }}">
-                            <small class="text-muted">{{ __('translate.Maximum refund amount is') }}
-                                {{ currency($booking->paid_amount) }}</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="crancy-btn crancy-btn__default"
-                            data-bs-dismiss="modal">{{ __('translate.Close') }}</button>
-                        <button type="submit"
-                            class="crancy-btn crancy-btn__danger">{{ __('translate.Cancel Booking') }}</button>
-                    </div>
-                </form>
+@if (!empty($booking->customer_notes))
+<div class="bd-note"><div class="bd-note__label">{{ __('translate.Customer Notes') }}</div><div class="bd-note__text">{{ $booking->customer_notes }}</div></div>
+@endif
+
+<div class="bd-card bd-grid-full">
+    <div class="bd-card__hdr">{{ __('translate.Price Details') }}</div>
+    <table class="bd-price-table">
+        <thead><tr><th>{{ __('translate.Description') }}</th><th>{{ __('translate.Amount') }}</th></tr></thead>
+        <tbody>
+            @if(!empty($ageBreakdown))
+                @foreach($ageBreakdown as $row)
+                    @php $unit=(float)($row['price']??0); $qty=(int)($row['qty']??0); $line=(float)($row['line']??($unit*$qty)); @endphp
+                    <tr><td>{{ $row['label'] ?? 'Category' }} ({{ number_format($unit,2) }} × {{ $qty }})</td><td>{{ currency($line) }}</td></tr>
+                @endforeach
+            @else
+                @if ($booking->is_per_person == 1)
+                    <tr><td>{{ __('translate.Adult Price') }} ({{ number_format((float)$booking->adult_price,2) }} × {{ (int)$booking->adults }})</td><td>{{ currency(((float)$booking->adult_price)*((int)$booking->adults)) }}</td></tr>
+                    @if ((int)$booking->children > 0)
+                    <tr><td>{{ __('translate.Child Price') }} ({{ number_format((float)$booking->child_price,2) }} × {{ (int)$booking->children }})</td><td>{{ currency(((float)$booking->child_price)*((int)$booking->children)) }}</td></tr>
+                    @endif
+                @else
+                    <tr><td>{{ __('translate.Service Price') }}</td><td>{{ currency((float)$booking->service_price) }}</td></tr>
+                @endif
+            @endif
+
+            @if(!empty($reconstructedExtras))
+                @foreach($reconstructedExtras as $rExtra)
+                <tr><td>{{ $rExtra['name'] }}</td><td>{{ currency($rExtra['amount']) }}</td></tr>
+                @endforeach
+            @elseif(isset($extra_services) && $extra_services->count() > 0)
+                @foreach($extra_services as $extra)
+                <tr><td>{{ $extra->name }} ({{ \Illuminate\Support\Str::title(str_replace('_', ' ', $extra->price_type)) }})</td><td>{{ currency($extra->price) }}</td></tr>
+                @endforeach
+            @elseif ((float)($booking->extra_charges ?? 0) != 0)
+            <tr><td>{{ __('translate.Extra charges') }}</td><td>{{ currency((float)$booking->extra_charges) }}</td></tr>
+            @endif
+
+            @if ($pickupCharge > 0)
+            <tr><td>{{ __('translate.Pickup Point') }}: {{ $booking->pickup_point_name ?? 'Pickup Service' }}</td><td>{{ currency($pickupCharge) }}</td></tr>
+            @endif
+
+            @if (!empty($booking->tax) && (float)$booking->tax > 0)
+            <tr><td>{{ __('translate.Tax') }} @if(!empty($booking->tax_percentage))({{ (float)$booking->tax_percentage }}%)@endif</td><td>{{ currency((float)$booking->tax) }}</td></tr>
+            @endif
+        </tbody>
+        <tfoot><tr><td>{{ __('translate.Total') }}</td><td>{{ currency((float)$booking->total) }}</td></tr></tfoot>
+    </table>
+</div>
+
             </div>
-        </div>
+        </div></div></div></div>
     </div>
-
-    <!-- Add Note Modal -->
-    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addNoteModalLabel">{{ __('translate.Add Admin Note') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('agency.tourbooking.bookings.add-note', $booking->id) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>{{ __('translate.Note') }} *</label>
-                            <textarea class="form-control" name="note" rows="3" required
-                                placeholder="{{ __('translate.Enter your note') }}"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="crancy-btn crancy-btn__default"
-                            data-bs-dismiss="modal">{{ __('translate.Cancel') }}</button>
-                        <button type="submit" class="crancy-btn">{{ __('translate.Add Note') }}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- paymentStatusModal -->
-    <div class="modal fade" id="paymentStatusModal" tabindex="-1" aria-labelledby="paymentStatusModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="paymentStatusModalLabel">Change Payment Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('agency.tourbooking.bookings.payment-status', ['booking' => $booking]) }}"
-                    method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <p>Are you sure you want to change the payment status?</p>
-                        <div class="form-group">
-                            <label>Payment Status</label>
-                            <select class="form-control" name="payment_status" required>
-                                <option value="">Select Payment Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="crancy-btn crancy-btn__default"
-                            data-bs-dismiss="modal">{{ __('translate.Cancel') }}</button>
-                        <button type="submit" class="crancy-btn crancy-btn__success">Change Payment Status</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+</section>
 @endsection
-@push('js_section')
-    <script>
-        (function($) {
-            "use strict"
-            $(document).ready(function() {
-                // Show/hide refund amount based on checkbox
-                $('#refundCheck').on('change', function() {
-                    if ($(this).is(':checked')) {
-                        $('.refund-amount-container').removeClass('d-none');
-                    } else {
-                        $('.refund-amount-container').addClass('d-none');
-                    }
-                });
-            });
-        })(jQuery);
-    </script>
-@endpush

@@ -974,6 +974,7 @@ if ($bookAsAgency) {
         if (Schema::hasColumn($order->getTable(), 'check_in_date') && !empty($payment_cart['check_in_date'])) {
             $order->check_in_date = $payment_cart['check_in_date'];
         }
+        $order->booking_date = $payment_cart['check_in_date'] ?? null;
         if (Schema::hasColumn($order->getTable(), 'check_out_date') && !empty($payment_cart['check_out_date'])) {
             $order->check_out_date = $payment_cart['check_out_date'];
         }

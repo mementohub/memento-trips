@@ -395,6 +395,7 @@ final class BookingController extends Controller
         // Safe-fill optional date columns
         if (Schema::hasColumn($booking->getTable(), 'check_in_date')) $booking->check_in_date = $checkInDate;
         if (Schema::hasColumn($booking->getTable(), 'check_out_date')) $booking->check_out_date = $validated['check_out_date'] ?? null;
+        $booking->booking_date = $checkInDate;
 
         $booking->is_per_person   = $isPerPerson ? 1 : 0;
         $booking->adults          = (int) $ageQuantities['adult'];
