@@ -801,17 +801,31 @@ final class ServiceController extends Controller
     public function storePickupPoint(Request $request, Service $service): RedirectResponse
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'address'     => 'required|string|max:500',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'extra_charge'=> 'nullable|numeric|min:0',
-            'charge_type' => 'required|in:flat,per_person,per_adult,per_child',
-            'is_default'  => 'boolean',
-            'status'      => 'boolean',
-            'notes'       => 'nullable|string',
+            'name'                    => 'required|string|max:255',
+            'description'             => 'nullable|string',
+            'address'                 => 'nullable|string|max:500',
+            'latitude'                => 'required|numeric|between:-90,90',
+            'longitude'               => 'required|numeric|between:-180,180',
+            'extra_charge'            => 'nullable|numeric|min:0',
+            'charge_type'             => 'required|in:per_booking,per_person',
+            'age_category_prices'     => 'nullable|array',
+            'age_category_prices.*'   => 'nullable|numeric|min:0',
+            'is_default'              => 'boolean',
+            'status'                  => 'boolean',
+            'notes'                   => 'nullable|string',
         ]);
+
+        // Check for duplicate coordinates
+        $duplicateCoords = PickupPoint::where('service_id', $service->id)
+            ->where('latitude', $request->latitude)
+            ->where('longitude', $request->longitude)
+            ->exists();
+
+        if ($duplicateCoords) {
+            return back()
+                ->withErrors(['latitude' => trans('translate.A pickup point with these coordinates already exists for this service')])
+                ->withInput();
+        }
 
         // Ensure only one default pickup point per service
         if ($request->has('is_default') && $request->is_default) {
@@ -820,18 +834,27 @@ final class ServiceController extends Controller
                 ->update(['is_default' => false]);
         }
 
+        // Build age category prices (only for per_person)
+        $ageCategoryPrices = null;
+        if ($request->charge_type === 'per_person' && $request->has('age_category_prices')) {
+            $ageCategoryPrices = collect($request->age_category_prices)
+                ->map(fn($v) => $v !== null && $v !== '' ? (float)$v : null)
+                ->toArray();
+        }
+
         PickupPoint::create([
-            'service_id'   => $service->id,
-            'name'         => $request->name,
-            'description'  => $request->description,
-            'address'      => $request->address,
-            'latitude'     => $request->latitude,
-            'longitude'    => $request->longitude,
-            'extra_charge' => $request->extra_charge,
-            'charge_type'  => $request->charge_type,
-            'is_default'   => $request->has('is_default'),
-            'status'       => $request->has('status'),
-            'notes'        => $request->notes,
+            'service_id'          => $service->id,
+            'name'                => $request->name,
+            'description'         => $request->description,
+            'address'             => $request->address,
+            'latitude'            => $request->latitude,
+            'longitude'           => $request->longitude,
+            'extra_charge'        => $request->charge_type === 'per_booking' ? $request->extra_charge : null,
+            'charge_type'         => $request->charge_type,
+            'age_category_prices' => $ageCategoryPrices,
+            'is_default'          => $request->has('is_default'),
+            'status'              => $request->has('status'),
+            'notes'               => $request->notes,
         ]);
 
         return back()->with(['message' => trans('translate.Pickup point added successfully'), 'alert-type' => 'success']);
@@ -841,17 +864,32 @@ final class ServiceController extends Controller
     public function updatePickupPoint(Request $request, PickupPoint $pickupPoint): RedirectResponse
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'address'     => 'required|string|max:500',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'extra_charge'=> 'nullable|numeric|min:0',
-            'charge_type' => 'required|in:flat,per_person,per_adult,per_child',
-            'is_default'  => 'boolean',
-            'status'      => 'boolean',
-            'notes'       => 'nullable|string',
+            'name'                    => 'required|string|max:255',
+            'description'             => 'nullable|string',
+            'address'                 => 'nullable|string|max:500',
+            'latitude'                => 'required|numeric|between:-90,90',
+            'longitude'               => 'required|numeric|between:-180,180',
+            'extra_charge'            => 'nullable|numeric|min:0',
+            'charge_type'             => 'required|in:per_booking,per_person',
+            'age_category_prices'     => 'nullable|array',
+            'age_category_prices.*'   => 'nullable|numeric|min:0',
+            'is_default'              => 'boolean',
+            'status'                  => 'boolean',
+            'notes'                   => 'nullable|string',
         ]);
+
+        // Check for duplicate coordinates (exclude current record)
+        $duplicateCoords = PickupPoint::where('service_id', $pickupPoint->service_id)
+            ->where('id', '!=', $pickupPoint->id)
+            ->where('latitude', $request->latitude)
+            ->where('longitude', $request->longitude)
+            ->exists();
+
+        if ($duplicateCoords) {
+            return back()
+                ->withErrors(['latitude' => trans('translate.A pickup point with these coordinates already exists for this service')])
+                ->withInput();
+        }
 
         // Ensure only one default pickup point per service
         if ($request->has('is_default') && $request->is_default) {
@@ -861,17 +899,26 @@ final class ServiceController extends Controller
                 ->update(['is_default' => false]);
         }
 
+        // Build age category prices (only for per_person)
+        $ageCategoryPrices = null;
+        if ($request->charge_type === 'per_person' && $request->has('age_category_prices')) {
+            $ageCategoryPrices = collect($request->age_category_prices)
+                ->map(fn($v) => $v !== null && $v !== '' ? (float)$v : null)
+                ->toArray();
+        }
+
         $pickupPoint->update([
-            'name'         => $request->name,
-            'description'  => $request->description,
-            'address'      => $request->address,
-            'latitude'     => $request->latitude,
-            'longitude'    => $request->longitude,
-            'extra_charge' => $request->extra_charge,
-            'charge_type'  => $request->charge_type,
-            'is_default'   => $request->has('is_default'),
-            'status'       => $request->has('status'),
-            'notes'        => $request->notes,
+            'name'                => $request->name,
+            'description'         => $request->description,
+            'address'             => $request->address,
+            'latitude'            => $request->latitude,
+            'longitude'           => $request->longitude,
+            'extra_charge'        => $request->charge_type === 'per_booking' ? $request->extra_charge : null,
+            'charge_type'         => $request->charge_type,
+            'age_category_prices' => $ageCategoryPrices,
+            'is_default'          => $request->has('is_default'),
+            'status'              => $request->has('status'),
+            'notes'               => $request->notes,
         ]);
 
         return back()->with(['message' => trans('translate.Pickup point updated successfully'), 'alert-type' => 'success']);

@@ -33,6 +33,7 @@ final class PickupPoint extends Model
         'longitude',
         'extra_charge',
         'charge_type',
+        'age_category_prices',
         'is_default',
         'status',
         'notes',
@@ -44,11 +45,12 @@ final class PickupPoint extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'latitude'     => 'decimal:8',
-        'longitude'    => 'decimal:8',
-        'extra_charge' => 'decimal:2',
-        'is_default'   => 'boolean',
-        'status'       => 'boolean',
+        'latitude'             => 'decimal:8',
+        'longitude'            => 'decimal:8',
+        'extra_charge'         => 'decimal:2',
+        'age_category_prices'  => 'array',
+        'is_default'           => 'boolean',
+        'status'               => 'boolean',
     ];
 
     /* =========================================================
@@ -108,18 +110,27 @@ final class PickupPoint extends Model
      */
     public function getFormattedExtraChargeAttribute(): string
     {
+        if ($this->charge_type === 'per_person') {
+            $prices = $this->age_category_prices ?? [];
+            if (empty($prices)) {
+                return __('translate.Per Person') . ' (' . __('translate.No prices set') . ')';
+            }
+            $parts = [];
+            foreach ($prices as $cat => $price) {
+                if ($price !== null && (float)$price > 0) {
+                    $parts[] = ucfirst($cat) . ': ' . currency((float)$price);
+                }
+            }
+            return empty($parts)
+                ? __('translate.Free')
+                : implode(' | ', $parts);
+        }
+
+        // per_booking (flat)
         if (!$this->hasExtraCharge()) {
             return __('translate.Free');
         }
-
-        $charge = currency($this->extra_charge);
-        
-        return match($this->charge_type) {
-            'per_person' => $charge . ' / ' . __('translate.Person'),
-            'per_adult'  => $charge . ' / ' . __('translate.Adult'),
-            'per_child'  => $charge . ' / ' . __('translate.Child'),
-            default      => $charge,
-        };
+        return currency($this->extra_charge);
     }
 
     /**
@@ -157,17 +168,24 @@ final class PickupPoint extends Model
      */
     public function calculateExtraCharge(array $quantities = []): float
     {
+        if ($this->charge_type === 'per_person') {
+            $prices = $this->age_category_prices ?? [];
+            if (empty($prices)) {
+                return 0.0;
+            }
+            $total = 0.0;
+            foreach (['adult', 'child', 'baby', 'infant'] as $cat) {
+                $catPrice = (float)($prices[$cat] ?? 0);
+                $catQty   = (int)($quantities[$cat] ?? 0);
+                $total   += $catPrice * $catQty;
+            }
+            return $total;
+        }
+
+        // per_booking — flat rate
         if (!$this->hasExtraCharge()) {
             return 0.0;
         }
-
-        $baseCharge = (float) $this->extra_charge;
-
-        return match($this->charge_type) {
-            'per_person' => $baseCharge * (float) array_sum($quantities),
-            'per_adult'  => $baseCharge * (float) ($quantities['adult'] ?? 0),
-            'per_child'  => $baseCharge * (float) (($quantities['child'] ?? 0) + ($quantities['baby'] ?? 0) + ($quantities['infant'] ?? 0)),
-            default      => $baseCharge, // flat rate
-        };
+        return (float)$this->extra_charge;
     }
 }

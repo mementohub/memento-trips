@@ -45,6 +45,15 @@
   .status-active { background: #d4edda; color: #155724; }
   .status-inactive { background: #f8d7da; color: #721c24; }
   .default-badge { background: #cce5ff; color: #004085; padding: 2px 6px; border-radius: 8px; font-size: 11px; }
+
+  /* Geocoding Autocomplete */
+  .address-autocomplete { position: relative; }
+  .address-suggestions { position: absolute; z-index: 1000; background: #fff; border: 1px solid #ddd; border-radius: 0 0 6px 6px; box-shadow: 0 4px 12px rgba(0,0,0,.12); max-height: 220px; overflow-y: auto; width: 100%; display: none; list-style: none; padding: 0; margin: 0; }
+  .address-suggestions li { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; line-height: 1.4; }
+  .address-suggestions li:last-child { border-bottom: none; }
+  .address-suggestions li:hover, .address-suggestions li.active { background: #f0f7ff; }
+  .address-suggestions li .suggestion-name { font-weight: 600; color: #333; }
+  .address-suggestions li .suggestion-detail { color: #888; font-size: 12px; }
 </style>
 @endpush
 
@@ -129,6 +138,7 @@
                               data-is-default="{{ $pickup->is_default ? '1' : '0' }}"
                               data-status="{{ $pickup->status ? '1' : '0' }}"
                               data-notes="{{ $pickup->notes }}"
+                              data-age-prices='@json($pickup->age_category_prices ?? [])'
                               data-bs-toggle="modal"
                               data-bs-target="#editPickupModal">
                               <i class="fa fa-edit"></i>
@@ -166,8 +176,11 @@
                       <input type="text" name="name" class="crancy__item-input" required>
                     </div>
                     <div class="col-md-6">
-                      <label class="crancy__item-label">{{ __('translate.Address') }} *</label>
-                      <input type="text" name="address" class="crancy__item-input" required>
+                      <label class="crancy__item-label">{{ __('translate.Address') }}</label>
+                      <div class="address-autocomplete">
+                        <input type="text" name="address" id="add_address" class="crancy__item-input" autocomplete="off" placeholder="{{ __('translate.Start typing an address...') }}">
+                        <ul class="address-suggestions" id="add_address_suggestions"></ul>
+                      </div>
                     </div>
                   </div>
 
@@ -184,21 +197,35 @@
 
                   <div class="row mg-top-20">
                     <div class="col-md-6">
+                      <label class="crancy__item-label">{{ __('translate.Charge Type') }}</label>
+                      <select name="charge_type" id="add_charge_type" class="crancy__item-input" onchange="toggleChargeFields('add')">
+                        <option value="per_booking">{{ __('translate.Per Booking') }}</option>
+                        <option value="per_person">{{ __('translate.Per Person') }}</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6" id="add_extra_charge_wrap">
                       <label class="crancy__item-label">{{ __('translate.Extra Charge') }}</label>
                       <div class="crancy__item-form--currency">
                         <input type="number" step="0.01" min="0" name="extra_charge" class="crancy__item-input" placeholder="0.00">
                         <div class="crancy__currency-icon"><span>{{ config('settings.currency_icon', '$') }}</span></div>
                       </div>
                     </div>
-                    <div class="col-md-6 d-none">
-                      <label class="crancy__item-label">{{ __('translate.Charge Type') }}</label>
-                      <select name="charge_type" class="crancy__item-input">
-                        <option value="flat">{{ __('translate.Flat Rate') }}</option>
-                        <option value="per_person">{{ __('translate.Per Person') }}</option>
-                        <option value="per_adult">{{ __('translate.Per Adult') }}</option>
-                        <option value="per_child">{{ __('translate.Per Child') }}</option>
-                      </select>
-                    </div>
+                  </div>
+
+                  {{-- Age Category Prices (visible when per_person) --}}
+                  <div class="row mg-top-20" id="add_age_prices_wrap" style="display:none;">
+                    @php $ageCategories = $service->normalizedAgeCategories(); @endphp
+                    @foreach(['adult', 'child', 'baby', 'infant'] as $cat)
+                      @if(!empty($ageCategories[$cat]['enabled']))
+                      <div class="col-md-3">
+                        <label class="crancy__item-label">{{ ucfirst($cat) }} {{ __('translate.Price') }}</label>
+                        <div class="crancy__item-form--currency">
+                          <input type="number" step="0.01" min="0" name="age_category_prices[{{ $cat }}]" class="crancy__item-input" placeholder="0.00">
+                          <div class="crancy__currency-icon"><span>{{ config('settings.currency_icon', '$') }}</span></div>
+                        </div>
+                      </div>
+                      @endif
+                    @endforeach
                   </div>
 
                   <div class="row mg-top-20">
@@ -273,8 +300,11 @@
               <input type="text" name="name" id="edit_name" class="crancy__item-input" required>
             </div>
             <div class="col-md-6">
-              <label class="crancy__item-label">{{ __('translate.Address') }} *</label>
-              <input type="text" name="address" id="edit_address" class="crancy__item-input" required>
+              <label class="crancy__item-label">{{ __('translate.Address') }}</label>
+              <div class="address-autocomplete">
+                <input type="text" name="address" id="edit_address" class="crancy__item-input" autocomplete="off" placeholder="{{ __('translate.Start typing an address...') }}">
+                <ul class="address-suggestions" id="edit_address_suggestions"></ul>
+              </div>
             </div>
           </div>
 
@@ -291,21 +321,34 @@
 
           <div class="row mg-top-20">
             <div class="col-md-6">
+              <label class="crancy__item-label">{{ __('translate.Charge Type') }}</label>
+              <select name="charge_type" id="edit_charge_type" class="crancy__item-input" onchange="toggleChargeFields('edit')">
+                <option value="per_booking">{{ __('translate.Per Booking') }}</option>
+                <option value="per_person">{{ __('translate.Per Person') }}</option>
+              </select>
+            </div>
+            <div class="col-md-6" id="edit_extra_charge_wrap">
               <label class="crancy__item-label">{{ __('translate.Extra Charge') }}</label>
               <div class="crancy__item-form--currency">
                 <input type="number" step="0.01" min="0" name="extra_charge" id="edit_extra_charge" class="crancy__item-input" placeholder="0.00">
                 <div class="crancy__currency-icon"><span>{{ config('settings.currency_icon', '$') }}</span></div>
               </div>
             </div>
-            <div class="col-md-6 d-none">
-              <label class="crancy__item-label">{{ __('translate.Charge Type') }}</label>
-              <select name="charge_type" id="edit_charge_type" class="crancy__item-input">
-                <option value="flat">{{ __('translate.Flat Rate') }}</option>
-                <option value="per_person">{{ __('translate.Per Person') }}</option>
-                <option value="per_adult">{{ __('translate.Per Adult') }}</option>
-                <option value="per_child">{{ __('translate.Per Child') }}</option>
-              </select>
-            </div>
+          </div>
+
+          {{-- Age Category Prices for Edit (visible when per_person) --}}
+          <div class="row mg-top-20" id="edit_age_prices_wrap" style="display:none;">
+            @foreach(['adult', 'child', 'baby', 'infant'] as $cat)
+              @if(!empty($ageCategories[$cat]['enabled']))
+              <div class="col-md-3">
+                <label class="crancy__item-label">{{ ucfirst($cat) }} {{ __('translate.Price') }}</label>
+                <div class="crancy__item-form--currency">
+                  <input type="number" step="0.01" min="0" name="age_category_prices[{{ $cat }}]" id="edit_age_price_{{ $cat }}" class="crancy__item-input" placeholder="0.00">
+                  <div class="crancy__currency-icon"><span>{{ config('settings.currency_icon', '$') }}</span></div>
+                </div>
+              </div>
+              @endif
+            @endforeach
           </div>
 
           <div class="row mg-top-20">
@@ -381,6 +424,22 @@
 @push('js_section')
 <script src="{{ asset('global/select2/select2.min.js') }}"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Toggle charge fields based on charge_type selection
+function toggleChargeFields(prefix) {
+  const val = document.getElementById(prefix + '_charge_type').value;
+  const extraWrap = document.getElementById(prefix + '_extra_charge_wrap');
+  const ageWrap   = document.getElementById(prefix + '_age_prices_wrap');
+
+  if (val === 'per_person') {
+    if (extraWrap) extraWrap.style.display = 'none';
+    if (ageWrap)   ageWrap.style.display = 'flex';
+  } else {
+    if (extraWrap) extraWrap.style.display = '';
+    if (ageWrap)   ageWrap.style.display = 'none';
+  }
+}
+</script>
 <script>
 (function($){
   "use strict";
@@ -489,6 +548,86 @@
       }
     });
 
+    // ========== Nominatim Geocoding Autocomplete ==========
+    let geocodeTimer = null;
+    let previewMarker = null;
+
+    function setupAddressAutocomplete(inputId, suggestionsId, latFieldId, lngFieldId) {
+      const $input = $('#' + inputId);
+      const $list  = $('#' + suggestionsId);
+
+      $input.on('input', function() {
+        const query = $(this).val().trim();
+        clearTimeout(geocodeTimer);
+
+        if (query.length < 3) {
+          $list.hide().empty();
+          return;
+        }
+
+        geocodeTimer = setTimeout(function() {
+          fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=5&addressdetails=1', {
+            headers: { 'Accept-Language': 'en' }
+          })
+          .then(res => res.json())
+          .then(function(results) {
+            $list.empty();
+            if (results.length === 0) {
+              $list.append('<li class="text-muted"><em>{{ __('translate.No results found') }}</em></li>');
+              $list.show();
+              return;
+            }
+
+            results.forEach(function(r) {
+              const $li = $('<li>')
+                .html('<div class="suggestion-name">' + (r.address ? (r.address.road || r.address.city || r.display_name.split(',')[0]) : r.display_name.split(',')[0]) + '</div><div class="suggestion-detail">' + r.display_name + '</div>')
+                .on('mouseenter', function() {
+                  // Preview marker (green)
+                  if (previewMarker) map.removeLayer(previewMarker);
+                  const previewIcon = L.divIcon({
+                    className: 'custom-pickup-marker',
+                    html: '<i class="fa fa-map-marker" style="color: #27ae60; font-size: 28px; opacity: 0.7;"></i>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 28]
+                  });
+                  previewMarker = L.marker([parseFloat(r.lat), parseFloat(r.lon)], { icon: previewIcon }).addTo(map);
+                  map.setView([parseFloat(r.lat), parseFloat(r.lon)], 15);
+                })
+                .on('click', function() {
+                  $input.val(r.display_name);
+                  $('#' + latFieldId).val(parseFloat(r.lat).toFixed(8));
+                  $('#' + lngFieldId).val(parseFloat(r.lon).toFixed(8));
+                  map.setView([parseFloat(r.lat), parseFloat(r.lon)], 15);
+
+                  // Remove preview, show final marker
+                  if (previewMarker) map.removeLayer(previewMarker);
+                  previewMarker = null;
+
+                  $list.hide().empty();
+                });
+
+              $list.append($li);
+            });
+
+            $list.show();
+          })
+          .catch(function() { $list.hide().empty(); });
+        }, 400);
+      });
+
+      // Close suggestions on click outside
+      $(document).on('click', function(e) {
+        if (!$(e.target).closest('.address-autocomplete').length) {
+          $list.hide();
+          if (previewMarker) { map.removeLayer(previewMarker); previewMarker = null; }
+        }
+      });
+    }
+
+    // Init geocoding for add form and edit modal
+    setupAddressAutocomplete('add_address', 'add_address_suggestions', 'add_latitude', 'add_longitude');
+    setupAddressAutocomplete('edit_address', 'edit_address_suggestions', 'edit_latitude', 'edit_longitude');
+
     // Edit pickup point
     $('.edit-pickup').on('click', function() {
       const id = $(this).data('id');
@@ -502,6 +641,7 @@
       const isDefault = $(this).data('is-default') == '1';
       const status = $(this).data('status') == '1';
       const notes = $(this).data('notes');
+      const agePrices = $(this).data('age-prices') || {};
 
       $('#edit_name').val(name);
       $('#edit_description').val(description);
@@ -513,6 +653,14 @@
       $('#edit_is_default').prop('checked', isDefault);
       $('#edit_status').prop('checked', status);
       $('#edit_notes').val(notes);
+
+      // Populate age category prices
+      ['adult', 'child', 'baby', 'infant'].forEach(function(cat) {
+        $('#edit_age_price_' + cat).val(agePrices[cat] || '');
+      });
+
+      // Toggle fields visibility
+      toggleChargeFields('edit');
 
       const url = @json(route('admin.tourbooking.services.pickup-points.update', ['service'=>$service->id,'pickupPoint'=>':id']));
       $('#editPickupForm').attr('action', url.replace(':id', id));
