@@ -33,7 +33,7 @@ final class BookingController extends Controller
      * - If you have agency_user_id column, it lists bookings for that agency user.
      * - Else fallback to old behavior: list bookings for services owned by current user.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $userId = Auth::id();
 
@@ -47,9 +47,47 @@ final class BookingController extends Controller
             $query->whereIn('service_id', $myServicesIds);
         }
 
-        $bookings = $query->latest()->paginate(20);
+        // Search
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%")
+                  ->orWhereHas('service', function ($sq) use ($search) {
+                      $sq->where('title', 'like', "%{$search}%")
+                         ->orWhere('location', 'like', "%{$search}%");
+                  });
+            });
+        }
 
-        return view('tourbooking::agency.bookings.index', compact('bookings'));
+        // Filters
+        if ($status = $request->input('status')) {
+            $query->where('booking_status', $status);
+        }
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+        if ($location = $request->input('location')) {
+            $query->whereHas('service', fn($q) => $q->where('location', $location));
+        }
+
+        $bookings = $query->latest()->paginate(20)->appends($request->query());
+
+        // Filter options
+        $locations = Service::whereNotNull('location')
+            ->where('location', '!=', '')
+            ->distinct()->pluck('location')->sort()->values();
+
+        $statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        $showPaymentFilter = false;
+        $paymentStatuses = [];
+
+        return view('tourbooking::agency.bookings.index', compact(
+            'bookings', 'locations', 'statuses', 'paymentStatuses', 'showPaymentFilter'
+        ));
     }
 
     /**

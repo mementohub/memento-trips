@@ -25,13 +25,54 @@ final class BookingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $bookings = Booking::with(['service', 'user'])
-            ->latest()
-            ->paginate(15);
+        $query = Booking::with(['service', 'user'])->latest();
 
-        return view('tourbooking::admin.bookings.index', compact('bookings'));
+        // Search
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%")
+                  ->orWhereHas('service', function ($sq) use ($search) {
+                      $sq->where('title', 'like', "%{$search}%")
+                         ->orWhere('location', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filters
+        if ($status = $request->input('status')) {
+            $query->where('booking_status', $status);
+        }
+        if ($paymentStatus = $request->input('payment_status')) {
+            $query->where('payment_status', $paymentStatus);
+        }
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+        if ($location = $request->input('location')) {
+            $query->whereHas('service', fn($q) => $q->where('location', $location));
+        }
+
+        $bookings = $query->paginate(15)->appends($request->query());
+
+        // Filter options for dropdowns
+        $locations = Service::whereNotNull('location')
+            ->where('location', '!=', '')
+            ->distinct()->pluck('location')->sort()->values();
+
+        $statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        $paymentStatuses = ['pending', 'completed'];
+        $showPaymentFilter = true;
+
+        return view('tourbooking::admin.bookings.index', compact(
+            'bookings', 'locations', 'statuses', 'paymentStatuses', 'showPaymentFilter'
+        ));
     }
 
     /**

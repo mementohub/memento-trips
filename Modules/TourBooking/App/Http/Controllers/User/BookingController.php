@@ -24,13 +24,52 @@ final class BookingController extends Controller
 {
 
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $bookings = Booking::with(['service:id,title,location'])
+        $query = Booking::with(['service:id,title,location'])
             ->where('user_id', auth()->user()->id)
-            ->latest()
-            ->get();
-        return view('tourbooking::user.booking.index', compact('bookings'));
+            ->latest();
+
+        // Search
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhereHas('service', function ($sq) use ($search) {
+                      $sq->where('title', 'like', "%{$search}%")
+                         ->orWhere('location', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filters
+        if ($status = $request->input('status')) {
+            $query->where('booking_status', $status);
+        }
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+        if ($location = $request->input('location')) {
+            $query->whereHas('service', fn($q) => $q->where('location', $location));
+        }
+
+        $bookings = $query->paginate(20)->appends($request->query());
+
+        // Filter options
+        $locations = Service::whereNotNull('location')
+            ->where('location', '!=', '')
+            ->distinct()->pluck('location')->sort()->values();
+
+        $statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        $showPaymentFilter = false;
+        $paymentStatuses = [];
+
+        return view('tourbooking::user.booking.index', compact(
+            'bookings', 'locations', 'statuses', 'paymentStatuses', 'showPaymentFilter'
+        ));
     }
 
     public function details(Request $request): View

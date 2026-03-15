@@ -17,12 +17,7 @@
                         <div class="crancy-dsinner">
                             <div class="crancy-table crancy-table--v3 mg-top-30">
 
-                                <div class="crancy-customer-filter">
-                                    <div
-                                        class="crancy-header__form crancy-header__form--customer create_new_btn_inline_box">
-                                        <h4 class="crancy-product-card__title">{{ __('translate.Bookings list') }}</h4>
-                                    </div>
-                                </div>
+                                @include('tourbooking::components._booking_filters')
 
                                 <div id="crancy-table__main_wrapper" class=" dt-bootstrap5 no-footer">
                                     <table class="crancy-table__main crancy-table__main-v3  no-footer" id="dataTable">
@@ -43,7 +38,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="crancy-table__body">
-                                            @foreach ($bookings as $booking)
+                                            @forelse ($bookings as $booking)
                                                 <tr class="odd">
                                                     <td class="crancy-table__column-2 crancy-table__data-2">
                                                         #{{ $booking->booking_code ?? 'N/A' }}</td>
@@ -78,9 +73,20 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center py-4 text-muted">
+                                                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                                        {{ __('translate.No bookings found') }}
+                                                    </td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
+
+                                    @if($bookings->hasPages())
+                                        {{ $bookings->appends(request()->query())->links('vendor.pagination.custom') }}
+                                    @endif
                                 </div>
 
                             </div>
